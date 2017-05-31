@@ -85,6 +85,7 @@ from __future__ import absolute_import, unicode_literals
 
 from itertools import count
 
+from celery import signals, states
 from celery.five import Empty, Queue
 from celery.task import Task
 from celery.utils import noop
@@ -93,6 +94,7 @@ from celery.worker.request import Request
 from celery.worker.strategy import proto1_to_proto2
 
 from kombu.five import buffer_t
+from kombu.utils.uuid import uuid
 
 __all__ = ['Batches']
 
@@ -123,15 +125,38 @@ def consume_queue(queue):
             break
 
 
+send_prerun = signals.task_prerun.send
+send_postrun = signals.task_postrun.send
+SUCCESS = states.SUCCESS
+FAILURE = states.FAILURE
+
+
 def apply_batches_task(task, args, loglevel, logfile):
+    # Mimics some of the functionality found in celery.app.trace.trace_task.
+    prerun_receivers = signals.task_prerun.receivers
+    postrun_receivers = signals.task_postrun.receivers
+
+    # Corresponds to multiple requests, so generate a new UUID.
+    task_id = uuid()
+
+    if prerun_receivers:
+        send_prerun(sender=task, task_id=task_id, task=task,
+                    args=args, kwargs={})
+
     task.push_request(loglevel=loglevel, logfile=logfile)
     try:
         result = task(*args)
+        state = SUCCESS
     except Exception as exc:
         result = None
+        state = FAILURE
         logger.error('Error: %r', exc, exc_info=True)
     finally:
         task.pop_request()
+        if postrun_receivers:
+            send_postrun(sender=task, task_id=task_id, task=task,
+                         args=args, kwargs={},
+                         retval=result, state=state)
     return result
 
 
