@@ -85,14 +85,14 @@ from __future__ import absolute_import, unicode_literals
 
 from itertools import count
 
-from kombu.five import buffer_t
-
-from celery.task import Task
 from celery.five import Empty, Queue
+from celery.task import Task
+from celery.utils import noop
 from celery.utils.log import get_logger
 from celery.worker.request import Request
-from celery.utils import noop
 from celery.worker.strategy import proto1_to_proto2
+
+from kombu.five import buffer_t
 
 __all__ = ['Batches']
 
