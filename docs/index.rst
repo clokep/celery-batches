@@ -1,6 +1,6 @@
-.. currentmodule:: celery.contrib.batches
+.. currentmodule:: celery_batches
 
-.. automodule:: celery.contrib.batches
+.. automodule:: celery_batches
 
     **API**
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-celery.contrib.batches
-======================
+celery_batches
+==============
 
 Experimental task class that buffers messages and processes them as a list.
 
