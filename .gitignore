@@ -1,5 +1,10 @@
 *.pyc
+
+# Build related.
 _build
 build
 dist
 celery_batches.egg-info
+
+# Testing related.
+.pytest_cache
