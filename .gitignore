@@ -8,3 +8,7 @@ celery_batches.egg-info
 
 # Testing related.
 .pytest_cache
+
+# Coverage related.
+.coverage
+htmlcov
