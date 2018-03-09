@@ -57,7 +57,7 @@ messages, and every 10 seconds.
         )
         # use mark_as_done to manually return response data
         for response, request in zip(reponses, requests):
-            app.backend.mark_as_done(request.id, response, request)
+            app.backend.mark_as_done(request.id, response)
 
 
     def wot_api_real(urls):
@@ -78,7 +78,7 @@ Using the API is done as follows::
     instead::
 
         from celery import current_app
-        app.backend.mark_as_done(request.id, response)
+        current_app.backend.mark_as_done(request.id, response)
 
 """
 from __future__ import absolute_import, unicode_literals

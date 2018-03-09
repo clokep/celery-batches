@@ -38,3 +38,14 @@ def add(requests):
         result += request.args[0]
 
     Results().set(result)
+
+
+@shared_task(base=Batches, flush_every=2, flush_interval=1)
+def cumadd(requests):
+    """Calculate the cumulative sum of the first arguments of each call."""
+    from celery import current_app
+
+    result = 0
+    for request in requests:
+        result += request.args[0]
+        current_app.backend.mark_as_done(request.id, result)
