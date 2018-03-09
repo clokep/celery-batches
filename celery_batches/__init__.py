@@ -191,8 +191,9 @@ class SimpleRequest(object):
 
     @classmethod
     def from_request(cls, request):
-        return cls(request.id, request.name, request.body[0],
-                   request.body[1], request.delivery_info, request.hostname)
+        args, kwargs, embed = request._payload
+        return cls(request.id, request.name, args,
+                   kwargs, request.delivery_info, request.hostname)
 
 
 class Batches(Task):
