@@ -7,7 +7,9 @@ dist
 celery_batches.egg-info
 
 # Testing related.
+.cache
 .pytest_cache
+.tox
 
 # Coverage related.
 .coverage
