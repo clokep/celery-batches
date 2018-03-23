@@ -1,2 +1,5 @@
 *.pyc
 _build
+build
+dist
+celery_batches.egg-info
