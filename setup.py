@@ -12,7 +12,7 @@ def long_description():
 
 
 setuptools.setup(
-    name='Celery Batches',
+    name='celery-batches',
     packages=setuptools.find_packages(),
     version='0.1',
     description='Experimental task class that buffers messages and processes them as a list.',
