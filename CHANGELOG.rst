@@ -3,8 +3,8 @@
 Changelog
 #########
 
-0.1 xxxx
-========
+0.1 2018-03-23
+==============
 
 * The initial released version, includes changes to make it a separate package,
   etc.
