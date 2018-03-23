@@ -191,6 +191,7 @@ class SimpleRequest(object):
 
     @classmethod
     def from_request(cls, request):
+        # Support both protocol v1 and v2.
         args, kwargs, embed = request._payload
         return cls(request.id, request.name, args,
                    kwargs, request.delivery_info, request.hostname)
