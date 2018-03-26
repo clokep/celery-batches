@@ -3,6 +3,13 @@
 Changelog
 #########
 
+next
+====
+
+* Add support for protocol v2.
+* Adds tests.
+* Fixes some documentation issues.
+
 0.1 2018-03-23
 ==============
 
