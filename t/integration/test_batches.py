@@ -4,6 +4,9 @@ from __future__ import absolute_import, unicode_literals
 from time import sleep
 
 from celery import signals
+from celery.app.task import Task
+from celery.result import _set_task_join_will_block, allow_join_result
+from celery.contrib.testing.tasks import ping
 
 from .tasks import add, cumadd, Results
 
@@ -13,11 +16,28 @@ class SignalCounter(object):
         self.calls = 0
         self.expected_calls = expected_calls
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, sender, **kwargs):
+        if isinstance(sender, Task):
+            sender = sender.name
+
+        # Ignore pings, those are used to ensure the worker processes tasks.
+        if sender == 'celery.ping':
+            return
+
         self.calls += 1
 
     def assert_calls(self):
         assert self.calls == self.expected_calls
+
+
+def _wait_for_ping(ping_task_timeout=10.0):
+    """
+    Wait for the celery worker to respond to a ping.
+
+    This should ensure that any other running tasks are done.
+    """
+    with allow_join_result():
+        assert ping.delay().get(timeout=ping_task_timeout) == 'pong'
 
 
 def test_flush_interval(celery_worker):
@@ -27,6 +47,9 @@ def test_flush_interval(celery_worker):
     # The flush interval is 1 second, this is longer.
     sleep(2)
 
+    # Let the worker work.
+    _wait_for_ping()
+
     assert Results().get() == 1
 
 
@@ -35,9 +58,8 @@ def test_flush_calls(celery_worker):
     add.delay(1)
     add.delay(3)
 
-    # Yield control to the other thread. (This needs to be shorter than the
-    # flush interval.)
-    sleep(1)
+    # Let the worker work.
+    _wait_for_ping()
 
     assert Results().get() == 4
 
@@ -46,9 +68,8 @@ def test_result(celery_worker):
     result_1 = cumadd.delay(1)
     result_2 = cumadd.delay(2)
 
-    # Yield control to the other thread. (This needs to be shorter than the
-    # flush interval.)
-    sleep(1)
+    # Let the worker work.
+    _wait_for_ping()
 
     assert result_1.get(timeout=3) == 1
     assert result_2.get(timeout=3) == 3
@@ -81,9 +102,8 @@ def test_signals(celery_app, celery_worker):
     add.delay(1)
     add.delay(3)
 
-    # Yield control to the other thread. (This needs to be shorter than the
-    # flush interval.)
-    sleep(1)
+    # Let the worker work.
+    _wait_for_ping()
 
     # Should still have the correct result.
     assert Results().get() == 4
