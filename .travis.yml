@@ -11,8 +11,12 @@ python:
   - 'pypy3'
 os:
   - linux
+env:
+  - CELERY_VERSION=40
+  - CELERY_VERSION=41
+  - CELERY_VERSION=master
 before_install:
-    - export TOXENV=${TRAVIS_PYTHON_VERSION}
+    - export TOXENV=${TRAVIS_PYTHON_VERSION}-celery${CELERY_VERSION}
     - |
           if [[ "$TOXENV" =~ "pypy" ]]; then
             export PYENV_ROOT="$HOME/.pyenv"
