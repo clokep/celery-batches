@@ -1,0 +1,40 @@
+language: python
+sudo: required
+dist: trusty
+cache: pip
+python:
+  - '2.7'
+  - '3.4'
+  - '3.5'
+  - '3.6'
+  - 'pypy'
+  - 'pypy3'
+os:
+  - linux
+env:
+  - CELERY_VERSION=40
+  - CELERY_VERSION=41
+  - CELERY_VERSION=master
+before_install:
+    - export TOXENV=${TRAVIS_PYTHON_VERSION}-celery${CELERY_VERSION}
+    - |
+          if [[ "$TOXENV" =~ "pypy" ]]; then
+            export PYENV_ROOT="$HOME/.pyenv"
+            if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
+              cd "$PYENV_ROOT" && git pull
+            else
+              rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/pyenv/pyenv.git "$PYENV_ROOT"
+            fi
+            "$PYENV_ROOT/bin/pyenv" install "$PYPY_VERSION"
+            virtualenv --python="$PYENV_ROOT/versions/$PYPY_VERSION/bin/python" "$HOME/virtualenvs/$PYPY_VERSION"
+            source "$HOME/virtualenvs/$PYPY_VERSION/bin/activate"
+            which python
+          fi
+after_success:
+  - |
+          if [[ -v MATRIX_TOXENV || "$TOXENV" =~ "pypy" ]]; then
+              .tox/$TOXENV/bin/coverage xml
+              .tox/$TOXENV/bin/codecov -e TOXENV
+          fi;
+install: pip install -U tox
+script: tox -v
