@@ -14,7 +14,7 @@ def long_description():
 setuptools.setup(
     name='celery-batches',
     packages=setuptools.find_packages(),
-    version='0.2',
+    version='0.3pre',
     description='Experimental task class that buffers messages and processes them as a list.',
     long_description=long_description(),
     keywords='task job queue distributed messaging actor',
