@@ -3,8 +3,8 @@
 Changelog
 #########
 
-next
-====
+0.2 2018-04-20
+==============
 
 * Add support for protocol v2.
 * Adds tests.
