@@ -9,7 +9,10 @@ Experimental task class that buffers messages and processes them as a list.
 
     For this to work you have to set
     :setting:`worker_prefetch_multiplier` to zero, or some value where
-    the final multiplied value is higher than ``flush_every``.
+    the final multiplied value is higher than ``flush_every``. Note that Celery
+    will attempt to continually pull data into memory if this is set to zero.
+    This can cause excessive resource consumption on both Celery workers and the
+    broker when used with a deep queue.
 
     In the future we hope to add the ability to direct batching tasks
     to a channel with different QoS requirements than the task channel.
