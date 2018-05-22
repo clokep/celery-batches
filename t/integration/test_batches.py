@@ -12,19 +12,26 @@ from .tasks import add, cumadd, Results
 
 
 class SignalCounter(object):
-    def __init__(self, expected_calls):
+    def __init__(self, expected_calls, callback=None):
         self.calls = 0
         self.expected_calls = expected_calls
+        self.callback = callback
 
     def __call__(self, sender, **kwargs):
         if isinstance(sender, Task):
-            sender = sender.name
+            sender_name = sender.name
+        else:
+            sender_name = sender
 
         # Ignore pings, those are used to ensure the worker processes tasks.
-        if sender == 'celery.ping':
+        if sender_name == 'celery.ping':
             return
 
         self.calls += 1
+
+        # Call the "real" signal, if necessary.
+        if self.callback:
+            self.callback(sender, **kwargs)
 
     def assert_calls(self):
         assert self.calls == self.expected_calls
@@ -41,7 +48,7 @@ def _wait_for_ping(ping_task_timeout=10.0):
 
 
 def test_flush_interval(celery_worker):
-    """The batch runs after the flush interval has elapsed."""
+    """The batch task runs after the flush interval has elapsed."""
     add.delay(1)
 
     # The flush interval is 1 second, this is longer.
@@ -54,7 +61,7 @@ def test_flush_interval(celery_worker):
 
 
 def test_flush_calls(celery_worker):
-    """The batch runs after two calls."""
+    """The batch task runs after two calls."""
     add.delay(1)
     add.delay(3)
 
@@ -65,6 +72,7 @@ def test_flush_calls(celery_worker):
 
 
 def test_result(celery_worker):
+    """Each task call can return a result."""
     result_1 = cumadd.delay(1)
     result_2 = cumadd.delay(2)
 
@@ -76,7 +84,7 @@ def test_result(celery_worker):
 
 
 def test_signals(celery_app, celery_worker):
-    """The batch runs after two calls."""
+    """Ensure that Celery signals run for the batch task."""
     # Configure a SignalCounter for each task signal.
     checks = (
         # Each task request gets published separately.
@@ -99,6 +107,7 @@ def test_signals(celery_app, celery_worker):
         sig.connect(counter)
         signal_counters.append(counter)
 
+    # The batch runs after 2 task calls.
     add.delay(1)
     add.delay(3)
 
@@ -111,6 +120,25 @@ def test_signals(celery_app, celery_worker):
     for counter in signal_counters:
         counter.assert_calls()
 
+
+def test_current_task(celery_app, celery_worker):
+    """Ensure the current_task is properly set when running the task."""
+    def signal(sender, **kwargs):
+        assert celery_app.current_task.name == 't.integration.tasks.add'
+
+    counter = SignalCounter(1, signal)
+    signals.task_prerun.connect(counter)
+
+    # The batch runs after 2 task calls.
+    add.delay(1)
+    add.delay(3)
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    # Should still have the correct result.
+    assert Results().get() == 4
+    counter.assert_calls()
 
 # TODO
 # * Test acking
