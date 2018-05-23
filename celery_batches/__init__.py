@@ -89,6 +89,8 @@ from __future__ import absolute_import, unicode_literals
 from itertools import count
 
 from celery import signals, states
+from celery._state import _task_stack
+from celery.app.task import Context
 from celery.five import Empty, Queue
 from celery.task import Task
 from celery.utils import noop
@@ -136,17 +138,28 @@ FAILURE = states.FAILURE
 
 def apply_batches_task(task, args, loglevel, logfile):
     # Mimics some of the functionality found in celery.app.trace.trace_task.
+    request_stack = task.request_stack
+    push_request = request_stack.push
+    pop_request = request_stack.pop
+    push_task = _task_stack.push
+    pop_task = _task_stack.pop
+
     prerun_receivers = signals.task_prerun.receivers
     postrun_receivers = signals.task_postrun.receivers
 
     # Corresponds to multiple requests, so generate a new UUID.
     task_id = uuid()
 
+    push_task(task)
+    task_request = Context(loglevel=loglevel, logfile=logfile)
+    push_request(task_request)
+
+    # -*- PRE -*-
     if prerun_receivers:
         send_prerun(sender=task, task_id=task_id, task=task,
                     args=args, kwargs={})
 
-    task.push_request(loglevel=loglevel, logfile=logfile)
+    # -*- TRACE -*-
     try:
         result = task(*args)
         state = SUCCESS
@@ -155,11 +168,15 @@ def apply_batches_task(task, args, loglevel, logfile):
         state = FAILURE
         logger.error('Error: %r', exc, exc_info=True)
     finally:
-        task.pop_request()
-        if postrun_receivers:
-            send_postrun(sender=task, task_id=task_id, task=task,
-                         args=args, kwargs={},
-                         retval=result, state=state)
+        try:
+            if postrun_receivers:
+                send_postrun(sender=task, task_id=task_id, task=task,
+                             args=args, kwargs={},
+                             retval=result, state=state)
+        finally:
+            pop_task()
+            pop_request()
+
     return result
 
 
