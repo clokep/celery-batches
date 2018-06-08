@@ -3,7 +3,15 @@
 celery_batches
 ==============
 
-Experimental task class that buffers messages and processes them as a list.
+Experimental task class that buffers messages and processes them as a list. Task
+requests are buffered in memory (on a worker) until either the flush count or
+flush interval is reached. Once the requests are flushed, they are sent to the
+task as a list of :class:`~celery_batches.SimpleRequest` instances.
+
+It is possible to return a result for each task request by calling
+``mark_as_done`` on your results backend. Returning a value from the Batch task
+call is only used to provide values to signals and does not populate into the
+results backend.
 
 .. warning::
 
