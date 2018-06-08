@@ -132,6 +132,7 @@ def consume_queue(queue):
 
 send_prerun = signals.task_prerun.send
 send_postrun = signals.task_postrun.send
+send_success = signals.task_success.send
 SUCCESS = states.SUCCESS
 FAILURE = states.FAILURE
 
@@ -146,6 +147,7 @@ def apply_batches_task(task, args, loglevel, logfile):
 
     prerun_receivers = signals.task_prerun.receivers
     postrun_receivers = signals.task_postrun.receivers
+    success_receivers = signals.task_success.receivers
 
     # Corresponds to multiple requests, so generate a new UUID.
     task_id = uuid()
@@ -154,19 +156,23 @@ def apply_batches_task(task, args, loglevel, logfile):
     task_request = Context(loglevel=loglevel, logfile=logfile)
     push_request(task_request)
 
-    # -*- PRE -*-
-    if prerun_receivers:
-        send_prerun(sender=task, task_id=task_id, task=task,
-                    args=args, kwargs={})
-
-    # -*- TRACE -*-
     try:
-        result = task(*args)
-        state = SUCCESS
-    except Exception as exc:
-        result = None
-        state = FAILURE
-        logger.error('Error: %r', exc, exc_info=True)
+        # -*- PRE -*-
+        if prerun_receivers:
+            send_prerun(sender=task, task_id=task_id, task=task,
+                        args=args, kwargs={})
+
+        # -*- TRACE -*-
+        try:
+            result = task(*args)
+            state = SUCCESS
+        except Exception as exc:
+            result = None
+            state = FAILURE
+            logger.error('Error: %r', exc, exc_info=True)
+        else:
+            if success_receivers:
+                send_success(sender=task, result=result)
     finally:
         try:
             if postrun_receivers:
