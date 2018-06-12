@@ -95,7 +95,7 @@ def test_signals(celery_app, celery_worker):
         (signals.task_postrun, 1),
         # Other task signals are not implemented.
         (signals.task_retry, 0),
-        (signals.task_success, 0),
+        (signals.task_success, 1),
         (signals.task_failure, 0),
         (signals.task_revoked, 0),
         (signals.task_unknown, 0),

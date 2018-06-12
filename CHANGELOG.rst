@@ -7,6 +7,7 @@ next
 ====
 
 * Properly set the ``current_task`` when running Batch tasks.
+* Call the success signal after a successful run of the Batch task.
 
 0.2 2018-04-20
 ==============
