@@ -56,7 +56,7 @@ messages, and every 10 seconds.
     import requests
     from urlparse import urlparse
 
-    from celery.contrib.batches import Batches
+    from celery_batches import Batches
 
     wot_api_target = 'https://api.mywot.com/0.4/public_link_json'
 
