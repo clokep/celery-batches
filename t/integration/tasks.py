@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-from celery import chain, group, shared_task
-from celery.exceptions import SoftTimeLimitExceeded
+from celery import shared_task
 from celery.utils.log import get_task_logger
 
 from celery_batches import Batches
@@ -12,6 +11,7 @@ logger = get_task_logger(__name__)
 
 class Singleton(type):
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)

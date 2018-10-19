@@ -5,7 +5,7 @@ from time import sleep
 
 from celery import signals
 from celery.app.task import Task
-from celery.result import _set_task_join_will_block, allow_join_result
+from celery.result import allow_join_result
 from celery.contrib.testing.tasks import ping
 
 from .tasks import add, cumadd, Results

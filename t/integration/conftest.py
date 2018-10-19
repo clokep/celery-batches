@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.fixture(scope='session', params=[1, 2])
 def celery_config(request):
     return {
