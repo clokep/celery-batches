@@ -11,11 +11,19 @@ python:
   - 'pypy3'
 os:
   - linux
+stages:
+  - lint
+  - test
 env:
   - CELERY_VERSION=40
   - CELERY_VERSION=41
   - CELERY_VERSION=42
   - CELERY_VERSION=master
+matrix:
+  include:
+    - python: '3.6'
+      env: TOXENV=flake8
+      stage: lint
 before_install:
     - export TOXENV=${TRAVIS_PYTHON_VERSION}-celery${CELERY_VERSION}
     - |
