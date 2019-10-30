@@ -94,6 +94,8 @@ Using the API is done as follows::
 """
 from __future__ import absolute_import, unicode_literals
 
+import time
+import threading
 from itertools import count
 
 from celery import signals, states
@@ -243,8 +245,32 @@ class Batches(Task):
     def __init__(self):
         self._buffer = Queue()
         self._count = count(1)
-        self._tref = None
         self._pool = None
+
+        self.queue_timeout = min(0.1, self.flush_interval)
+
+        self._thread = threading.Thread(target=self.proc)
+        self._thread.setDaemon(True)
+        self._thread.start()
+
+
+
+    def proc(self):
+        while True:
+            requests = []
+            s = time.time()
+            e = s
+            while len(requests) < self.flush_every and e - s <= self.flush_interval:
+                try:
+                    req = self._buffer.get(timeout=self.queue_timeout)
+                    requests.append(req)
+                except Empty:
+                    pass
+                finally:
+                    e = time.time()
+
+            if requests:
+                self.flush(requests)
 
     def run(self, requests):
         raise NotImplementedError('must implement run(requests)')
@@ -255,9 +281,7 @@ class Batches(Task):
         eventer = consumer.event_dispatcher
         Req = Request
         connection_errors = consumer.connection_errors
-        timer = consumer.timer
         put_buffer = self._buffer.put
-        flush_buffer = self._do_flush
         body_can_be_buffer = consumer.pool.body_can_be_buffer
 
         def task_message_handler(message, body, ack, reject, callbacks, **kw):
@@ -279,33 +303,11 @@ class Batches(Task):
             )
             put_buffer(request)
 
-            if self._tref is None:     # first request starts flush timer.
-                self._tref = timer.call_repeatedly(
-                    self.flush_interval, flush_buffer,
-                )
-
-            if not next(self._count) % self.flush_every:
-                flush_buffer()
-
         return task_message_handler
 
     def flush(self, requests):
         return self.apply_buffer(requests, ([SimpleRequest.from_request(r)
                                              for r in requests],))
-
-    def _do_flush(self):
-        logger.debug('Batches: Wake-up to flush buffer...')
-        requests = None
-        if self._buffer.qsize():
-            requests = list(consume_queue(self._buffer))
-            if requests:
-                logger.debug('Batches: Buffer complete: %s', len(requests))
-                self.flush(requests)
-        if not requests:
-            logger.debug('Batches: Canceling timer: Nothing in buffer.')
-            if self._tref:
-                self._tref.cancel()  # cancel timer.
-            self._tref = None
 
     def apply_buffer(self, requests, args=(), kwargs={}):
         acks_late = [], []
