@@ -94,6 +94,7 @@ Using the API is done as follows::
 """
 from __future__ import absolute_import, unicode_literals
 
+import datetime
 import time
 import threading
 from itertools import count
@@ -196,6 +197,12 @@ def apply_batches_task(task, args, loglevel, logfile):
     return result
 
 
+class MyRequest(Request):
+    def __init__(self, *args, **kwargs):
+        super(MyRequest, self).__init__(*args, **kwargs)
+        self.receive_time = datetime.datetime.now()
+
+
 class SimpleRequest(object):
     """Pickleable request."""
 
@@ -217,20 +224,24 @@ class SimpleRequest(object):
     #: worker node name
     hostname = None
 
-    def __init__(self, id, name, args, kwargs, delivery_info, hostname):
+    #: time_start
+    receive_time = None
+
+    def __init__(self, id, name, args, kwargs, delivery_info, hostname, receive_time):
         self.id = id
         self.name = name
         self.args = args
         self.kwargs = kwargs
         self.delivery_info = delivery_info
         self.hostname = hostname
+        self.receive_time = receive_time
 
     @classmethod
-    def from_request(cls, request):
+    def from_request(cls, request: MyRequest):
         # Support both protocol v1 and v2.
         args, kwargs, embed = request._payload
         return cls(request.id, request.name, args,
-                   kwargs, request.delivery_info, request.hostname)
+                   kwargs, request.delivery_info, request.hostname, request.receive_time)
 
 
 class Batches(Task):
@@ -252,8 +263,6 @@ class Batches(Task):
         self._thread = threading.Thread(target=self.proc)
         self._thread.setDaemon(True)
         self._thread.start()
-
-
 
     def proc(self):
         while True:
@@ -279,7 +288,7 @@ class Batches(Task):
         self._pool = consumer.pool
         hostname = consumer.hostname
         eventer = consumer.event_dispatcher
-        Req = Request
+        Req = MyRequest
         connection_errors = consumer.connection_errors
         put_buffer = self._buffer.put
         body_can_be_buffer = consumer.pool.body_can_be_buffer
