@@ -42,6 +42,7 @@ matrix:
       env: CELERY_VERSION=42
   allow_failures:
     - env: CELERY_VERSION=master
+    - python: pypy
 before_install:
   # If TOXENV is not set, build it from the Python and Celery versions.
   - if [[ -v CELERY_VERSION ]]; then export TOXENV=${TRAVIS_PYTHON_VERSION}-celery${CELERY_VERSION}; fi; env
