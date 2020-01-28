@@ -10,6 +10,8 @@ next
 * Call the success signal after a successful run of the Batch task.
 * Support running tasks eagerly via the ``Task.apply()`` method. This causes
   the task to execute with a batch of a single item.
+* Officially support Python 3.7 and 3.8. Drop support for Python 3.4.
+* Officially support Celery 4.3 and 4.4.
 
 0.2 2018-04-20
 ==============
