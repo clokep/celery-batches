@@ -306,7 +306,7 @@ class Batches(Task):
             hostname="localhost",
         )
 
-        return super().apply(([request],), {}, *_args, **_kwargs)
+        return super(Batches, self).apply(([request],), {}, *_args, **_kwargs)
 
     def flush(self, requests):
         return self.apply_buffer(requests, ([SimpleRequest.from_request(r)
