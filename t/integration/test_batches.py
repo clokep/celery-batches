@@ -47,6 +47,19 @@ def _wait_for_ping(ping_task_timeout=10.0):
         assert ping.delay().get(timeout=ping_task_timeout) == 'pong'
 
 
+def test_always_eager():
+    """The batch task runs immediately, in the same thread."""
+    app = add._get_app()
+    task_always_eager = app.conf.task_always_eager
+    app.conf["task_always_eager"] = True
+
+    add.delay(1)
+
+    app.conf["task_always_eager"] = task_always_eager
+
+    assert Results().get() == 1
+
+
 def test_flush_interval(celery_worker):
     """The batch task runs after the flush interval has elapsed."""
     add.delay(1)

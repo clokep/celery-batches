@@ -98,9 +98,8 @@ from itertools import count
 
 from celery import signals, states
 from celery._state import _task_stack
-from celery.app.task import Context
+from celery.app.task import Context, Task
 from celery.five import Empty, Queue
-from celery.task import Task
 from celery.utils import noop
 from celery.utils.log import get_logger
 from celery.worker.request import Request
@@ -288,6 +287,18 @@ class Batches(Task):
                 flush_buffer()
 
         return task_message_handler
+
+    def apply(self, args=None, kwargs=None, *_args, **_kwargs):
+        request = SimpleRequest(
+            id=_kwargs.get("task_id", uuid()),
+            name="batch application",
+            args=args or (),
+            kwargs=kwargs or {},
+            delivery_info=None,
+            hostname="localhost",
+        )
+
+        return super().apply(([request],), {}, *_args, **_kwargs)
 
     def flush(self, requests):
         return self.apply_buffer(requests, ([SimpleRequest.from_request(r)
