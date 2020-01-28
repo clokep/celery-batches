@@ -8,6 +8,8 @@ next
 
 * Properly set the ``current_task`` when running Batch tasks.
 * Call the success signal after a successful run of the Batch task.
+* Support running tasks eagerly via the ``Task.apply()`` method. This causes
+  the task to execute with a batch of a single item.
 
 0.2 2018-04-20
 ==============

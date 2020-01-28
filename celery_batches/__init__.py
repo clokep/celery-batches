@@ -289,16 +289,24 @@ class Batches(Task):
         return task_message_handler
 
     def apply(self, args=None, kwargs=None, *_args, **_kwargs):
+        """
+        Execute this task locally as a batch of size 1, by blocking until the task returns.
+
+        Arguments:
+            args (Tuple): positional arguments passed on to the task.
+        Returns:
+            celery.result.EagerResult: pre-evaluated result.
+        """
         request = SimpleRequest(
             id=_kwargs.get("task_id", uuid()),
-            name="batch application",
+            name="batch request",
             args=args or (),
             kwargs=kwargs or {},
             delivery_info=None,
             hostname="localhost",
         )
 
-        return super().apply(([request],), {}, *_args, **_kwargs)
+        return super(Batches, self).apply(([request],), {}, *_args, **_kwargs)
 
     def flush(self, requests):
         return self.apply_buffer(requests, ([SimpleRequest.from_request(r)
