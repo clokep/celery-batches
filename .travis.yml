@@ -1,12 +1,12 @@
 language: python
-sudo: required
-dist: trusty
+dist: bionic
 cache: pip
 python:
   - '2.7'
-  - '3.4'
   - '3.5'
   - '3.6'
+  - '3.7'
+  - '3.8'
   - 'pypy'
   - 'pypy3'
 os:
@@ -18,14 +18,31 @@ env:
   - CELERY_VERSION=40
   - CELERY_VERSION=41
   - CELERY_VERSION=42
+  - CELERY_VERSION=43
+  - CELERY_VERSION=44
   - CELERY_VERSION=master
 matrix:
   include:
     - python: '3.6'
       env: TOXENV=flake8
       stage: lint
+  # Celery 4.3 added support for Python >= 3.7.
+  exclude:
+    - python: '3.7'
+      env: CELERY_VERSION=40
+    - python: '3.7'
+      env: CELERY_VERSION=41
+    - python: '3.7'
+      env: CELERY_VERSION=42
+    - python: '3.8'
+      env: CELERY_VERSION=40
+    - python: '3.8'
+      env: CELERY_VERSION=41
+    - python: '3.8'
+      env: CELERY_VERSION=42
   allow_failures:
     - env: CELERY_VERSION=master
+    - python: pypy
 before_install:
   # If TOXENV is not set, build it from the Python and Celery versions.
   - if [[ -v CELERY_VERSION ]]; then export TOXENV=${TRAVIS_PYTHON_VERSION}-celery${CELERY_VERSION}; fi; env
