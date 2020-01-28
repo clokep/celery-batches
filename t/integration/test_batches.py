@@ -62,6 +62,15 @@ def test_always_eager():
     assert Results().get() == 1
 
 
+def test_apply():
+    """The batch task runs immediately, in the same thread."""
+    result = add.apply(args=(1, ))
+
+    # An EagerResult that resolve to 1 should be returned.
+    assert result.get() == 1
+    assert Results().get() == 1
+
+
 def test_flush_interval(celery_worker):
     """The batch task runs after the flush interval has elapsed."""
     add.delay(1)
