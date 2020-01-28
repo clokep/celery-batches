@@ -38,6 +38,7 @@ def add(requests):
         result += request.args[0]
 
     Results().set(result)
+    return result
 
 
 @shared_task(base=Batches, flush_every=2, flush_interval=1)

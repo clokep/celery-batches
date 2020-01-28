@@ -53,10 +53,12 @@ def test_always_eager():
     task_always_eager = app.conf.task_always_eager
     app.conf["task_always_eager"] = True
 
-    add.delay(1)
+    result = add.delay(1)
 
     app.conf["task_always_eager"] = task_always_eager
 
+    # An EagerResult that resolve to 1 should be returned.
+    assert result.get() == 1
     assert Results().get() == 1
 
 
