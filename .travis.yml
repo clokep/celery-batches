@@ -1,6 +1,5 @@
 language: python
-sudo: required
-dist: trusty
+dist: bionic
 cache: pip
 python:
   - '2.7'
