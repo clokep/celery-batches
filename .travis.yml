@@ -26,6 +26,20 @@ matrix:
     - python: '3.6'
       env: TOXENV=flake8
       stage: lint
+  # Celery 4.3 added support for Python >= 3.7.
+  exclude:
+    - python: '3.7'
+      env: CELERY_VERSION=40
+    - python: '3.7'
+      env: CELERY_VERSION=41
+    - python: '3.7'
+      env: CELERY_VERSION=42
+    - python: '3.8'
+      env: CELERY_VERSION=40
+    - python: '3.8'
+      env: CELERY_VERSION=41
+    - python: '3.8'
+      env: CELERY_VERSION=42
   allow_failures:
     - env: CELERY_VERSION=master
 before_install:
