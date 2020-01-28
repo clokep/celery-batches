@@ -14,3 +14,6 @@ celery_batches.egg-info
 # Coverage related.
 .coverage
 htmlcov
+
+# Editor related.
+.idea
