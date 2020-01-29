@@ -3,8 +3,8 @@
 Changelog
 #########
 
-next
-====
+0.3 2020-01-29
+==============
 
 * Properly set the ``current_task`` when running Batch tasks.
 * Call the success signal after a successful run of the Batch task.
