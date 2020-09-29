@@ -17,3 +17,4 @@ htmlcov
 
 # Editor related.
 .idea
+.python-version
