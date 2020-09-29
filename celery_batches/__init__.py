@@ -119,7 +119,7 @@ if PY3:
 
 else:
     from Queue import Queue, Empty
-    buffer_t = buffer
+    buffer_t = buffer  # noqa
 
 
 __all__ = ['Batches']
