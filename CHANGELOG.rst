@@ -6,7 +6,7 @@ Changelog
 next
 ====
 
-TODO
+* Officially support Celery 5.0.
 
 0.3 2020-01-29
 ==============
