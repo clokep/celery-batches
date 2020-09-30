@@ -31,8 +31,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Celery Batches'
-copyright = u'2017, Percipient Networks'
-author = u'Percipient Networks'
+copyright = u'2017, Percipient Networks; 2020, Patrick Cloke'
+author = u'Patrick Cloke'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
