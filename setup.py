@@ -23,7 +23,7 @@ setuptools.setup(
     url='https://github.com/percipient/celery-batches',
     license='BSD',
     platforms=['any'],
-    install_requires=['celery>=5.0,<5.1'],
+    install_requires=['celery>=4.4,<5.1'],
     python_requires=">=3.6,",
     classifiers=[
         'Development Status :: 3 - Alpha',
