@@ -12,6 +12,7 @@ stages:
   - lint
   - test
 env:
+  - CELERY_VERSION=44
   - CELERY_VERSION=50
   - CELERY_VERSION=master
 matrix:
