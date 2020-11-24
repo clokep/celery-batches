@@ -92,10 +92,8 @@ Using the API is done as follows::
         current_app.backend.mark_as_done(request.id, response)
 
 """
-from __future__ import absolute_import, unicode_literals
-
 from itertools import count
-import sys
+from queue import Empty, Queue
 
 from celery import signals, states
 from celery._state import _task_stack
@@ -106,20 +104,6 @@ from celery.worker.request import Request
 from celery.worker.strategy import proto1_to_proto2
 
 from kombu.utils.uuid import uuid
-
-# Celery 5 dropped support for five, handle those manually.
-PY3 = sys.version_info[0] >= 3
-
-if PY3:
-    from queue import Empty, Queue
-
-    # Py3 does not have buffer, only use this for isa checks.
-    class buffer_t(object):
-        """Python 3 does not have a buffer type."""
-
-else:
-    from Queue import Queue, Empty
-    buffer_t = buffer  # noqa
 
 
 __all__ = ['Batches']
@@ -271,15 +255,12 @@ class Batches(Task):
         timer = consumer.timer
         put_buffer = self._buffer.put
         flush_buffer = self._do_flush
-        body_can_be_buffer = consumer.pool.body_can_be_buffer
 
         def task_message_handler(message, body, ack, reject, callbacks, **kw):
             if body is None:
                 body, headers, decoded, utc = (
                     message.body, message.headers, False, True,
                 )
-                if not body_can_be_buffer:
-                    body = bytes(body) if isinstance(body, buffer_t) else body
             else:
                 body, headers, decoded, utc = proto1_to_proto2(message, body)
 
