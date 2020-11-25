@@ -1,2 +1,2 @@
-git+https://github.com/celery/sphinx_celery.git
-Sphinx==1.6.5
+sphinx_celery==2.0.0
+Sphinx>=3.0.0
