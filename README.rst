@@ -5,6 +5,29 @@ Celery Batches provides a ``Task`` class that allows processing of multiple
 Celery task calls together as a list. The buffer of tasks calls is flushed on a
 timer and based on the number of queued tasks.
 
+What do I need?
+===============
+
+celery-batches version runs on,
+
+- Python (3.6, 3.7, 3.8)
+- PyPy3 (7.6)
+
+And is tested with Celery >= 4.4.
+
+If you're running an older version of Python, you need to be running
+an older version of celery-batches:
+
+- Python 2.7: celery-batches 0.3 series.
+- Python 3.4: celery-batches 0.2 series.
+- Python 3.5: celery-batches 0.3 series.
+
+If you're running an older version of Celery, you need to be running
+an older version of celery-batches:
+
+- Celery < 4.0: Use `celery.contrib.batches` instead.
+- Celery 4.0 - 4.3: celery-batches 0.3 series.
+
 History
 =======
 
