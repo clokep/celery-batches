@@ -1,6 +1,13 @@
 Celery Batches
 ==============
 
+.. image:: https://api.travis-ci.com/clokep/celery-batches.svg?branch=main
+    :target: https://travis-ci.com/clokep/celery-batches
+
+.. image:: https://readthedocs.org/projects/celery-batches/badge/?version=latest
+    :target: https://celery-batches.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 Celery Batches provides a ``Task`` class that allows processing of multiple
 Celery task calls together as a list. The buffer of tasks calls is flushed on a
 timer and based on the number of queued tasks.
