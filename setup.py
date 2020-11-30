@@ -17,6 +17,7 @@ setuptools.setup(
     version='0.4',
     description='Experimental task class that buffers messages and processes them as a list.',
     long_description=long_description(),
+    long_description_content_type='text/x-rst',
     keywords='task job queue distributed messaging actor',
     author='Patrick Cloke',
     author_email='clokep@patrick.cloke.us',
