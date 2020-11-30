@@ -3,8 +3,8 @@
 Changelog
 #########
 
-next
-====
+0.4 2020-11-30
+==============
 
 * Officially support Celery 5.0. Drop support for Celery < 4.4.
 * Drop support for Python < 3.6.
