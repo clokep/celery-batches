@@ -40,7 +40,7 @@ jobs:
 
       - name: "Run tox targets for ${{ matrix.python-version }}"
         env:
-          TOXENV: "${{ matrix.python-version }}-celery44,${{ matrix.python-version }}-celery50"
+          TOXENV: "${{ matrix.python-version }}-celery44,${{ matrix.python-version }}-celery50,${{ matrix.python-version }}-celery51"
         run: "python -m tox"
 
       - name: "Run tox targets for ${{ matrix.python-version }} for celery master"
