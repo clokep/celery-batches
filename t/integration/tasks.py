@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 from celery import shared_task
 from celery.utils.log import get_task_logger
 
@@ -14,11 +11,11 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
-class Results(object):
+class Results:
     """A singleton for storing information about the result."""
     __metaclass__ = Singleton
     _results = []
