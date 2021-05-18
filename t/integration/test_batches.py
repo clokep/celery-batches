@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
-
 from time import sleep
 
 from celery import signals
@@ -11,7 +8,7 @@ from celery.contrib.testing.tasks import ping
 from .tasks import add, cumadd, Results
 
 
-class SignalCounter(object):
+class SignalCounter:
     def __init__(self, expected_calls, callback=None):
         self.calls = 0
         self.expected_calls = expected_calls

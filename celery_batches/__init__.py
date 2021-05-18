@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 celery_batches
 ==============
@@ -191,7 +190,7 @@ def apply_batches_task(task, args, loglevel, logfile):
     return result
 
 
-class SimpleRequest(object):
+class SimpleRequest:
     """Pickleable request."""
 
     #: task id
@@ -301,7 +300,7 @@ class Batches(Task):
             hostname="localhost",
         )
 
-        return super(Batches, self).apply(([request],), {}, *_args, **_kwargs)
+        return super().apply(([request],), {}, *_args, **_kwargs)
 
     def flush(self, requests):
         return self.apply_buffer(requests, ([SimpleRequest.from_request(r)
