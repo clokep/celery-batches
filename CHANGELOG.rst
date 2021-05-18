@@ -6,28 +6,43 @@ Changelog
 next
 ====
 
+* Support Celery 5.1. (`#27 <https://github.com/clokep/celery-batches/pull/27>`_)
+* Clean-up unnecessary code. (`#28 <https://github.com/clokep/celery-batches/pull/27>`_)
+* CI improvements. (`#25 <https://github.com/clokep/celery-batches/pull/25>`_)
+
 0.4 2020-11-30
 ==============
 
-* Officially support Celery 5.0. Drop support for Celery < 4.4.
-* Drop support for Python < 3.6.
+* Support Celery 5.0. Drop support for Celery < 4.4. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
+* Drop support for Python < 3.6. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
 
 0.3 2020-01-29
 ==============
 
-* Properly set the ``current_task`` when running Batch tasks.
-* Call the success signal after a successful run of the Batch task.
+* Properly set the ``current_task`` when running ``Batch`` tasks. (`#4 <https://github.com/clokep/celery-batches/pull/4>`_)
+* Call the success signal after a successful run of the ``Batch`` task. (`#6 <https://github.com/clokep/celery-batches/pull/6>`_)
 * Support running tasks eagerly via the ``Task.apply()`` method. This causes
-  the task to execute with a batch of a single item.
-* Officially support Python 3.7 and 3.8. Drop support for Python 3.4.
-* Officially support Celery 4.3 and 4.4.
+  the task to execute with a batch of a single item. Contributed by
+  `@scalen <https://github.com/scalen>`_. (`#16 <https://github.com/clokep/celery-batches/pull/16>`_,
+  `#18 <https://github.com/clokep/celery-batches/pull/18>`_)
+* Improved documentation. Contributed by
+  `@nijel <https://github.com/nijel>`_. (`#3 <https://github.com/clokep/celery-batches/pull/3>`_,
+  `#7 <https://github.com/clokep/celery-batches/pull/7>`_)
+* Support Python 3.7 and 3.8. Drop support for Python 3.4. (`#19 <https://github.com/clokep/celery-batches/pull/19>`_)
+* Support Celery 4.2, 4.3, and 4.4. (`#12 <https://github.com/clokep/celery-batches/pull/12>`_,
+  `#14 <https://github.com/clokep/celery-batches/pull/14>`_,
+  `#19 <https://github.com/clokep/celery-batches/pull/19>`_)
+* CI improvements. (`#5 <https://github.com/clokep/celery-batches/pull/5>`_,
+  `#11 <https://github.com/clokep/celery-batches/pull/11>`_,
+  `#13 <https://github.com/clokep/celery-batches/pull/13>`_,)
 
 0.2 2018-04-20
 ==============
 
-* Add support for protocol v2.
-* Adds tests.
-* Fixes some documentation issues.
+* Add support for protocol v2. (`#1 <https://github.com/clokep/celery-batches/pull/1>`_)
+* Add tests. (`#1 <https://github.com/clokep/celery-batches/pull/1>`_,
+  `#2 <https://github.com/clokep/celery-batches/pull/2>`_)
+* Fixes some documentation issues. (`#1 <https://github.com/clokep/celery-batches/pull/1>`_)
 
 0.1 2018-03-23
 ==============
