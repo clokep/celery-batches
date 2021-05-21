@@ -67,7 +67,7 @@ messages, and every 10 seconds.
         )
         # use mark_as_done to manually return response data
         for response, request in zip(reponses, requests):
-            app.backend.mark_as_done(request.id, response)
+            app.backend.mark_as_done(request.id, response, request=request)
 
 
     def wot_api_real(urls):
@@ -88,7 +88,7 @@ Using the API is done as follows::
     instead::
 
         from celery import current_app
-        current_app.backend.mark_as_done(request.id, response)
+        current_app.backend.mark_as_done(request.id, response, request=request)
 
 """
 from itertools import count
@@ -99,6 +99,7 @@ from celery._state import _task_stack
 from celery.app.task import Context, Task
 from celery.utils import noop
 from celery.utils.log import get_logger
+from celery.utils.nodenames import gethostname
 from celery.worker.request import Request
 from celery.worker.strategy import proto1_to_proto2
 
@@ -191,7 +192,15 @@ def apply_batches_task(task, args, loglevel, logfile):
 
 
 class SimpleRequest:
-    """Pickleable request."""
+    """
+    A request to execute a task.
+
+    A list of :class:`~celery_batches.SimpleRequest` instances is provided to the
+    batch task during execution.
+
+    This must be pickleable (if using the prefork pool), but generally should
+    have the same properties as :class:`~celery.worker.request.Request`.
+    """
 
     #: task id
     id = None
@@ -211,20 +220,32 @@ class SimpleRequest:
     #: worker node name
     hostname = None
 
-    def __init__(self, id, name, args, kwargs, delivery_info, hostname):
+    #: used by rpc backend when failures reported by parent process
+    reply_to = None
+
+    #: used similarly to reply_to
+    correlation_id = None
+
+    #: TODO
+    chord = None
+
+    def __init__(self, id, name, args, kwargs, delivery_info, hostname, reply_to, correlation_id):
         self.id = id
         self.name = name
         self.args = args
         self.kwargs = kwargs
         self.delivery_info = delivery_info
         self.hostname = hostname
+        self.reply_to = reply_to
+        self.correlation_id = correlation_id
 
     @classmethod
     def from_request(cls, request):
         # Support both protocol v1 and v2.
         args, kwargs, embed = request._payload
         return cls(request.id, request.name, args,
-                   kwargs, request.delivery_info, request.hostname)
+                   kwargs, request.delivery_info, request.hostname,
+                   request.reply_to, request.correlation_id)
 
 
 class Batches(Task):
@@ -296,8 +317,10 @@ class Batches(Task):
             name="batch request",
             args=args or (),
             kwargs=kwargs or {},
-            delivery_info=None,
-            hostname="localhost",
+            delivery_info={'is_eager': True},
+            hostname=gethostname(),
+            reply_to=None,
+            correlation_id=None,
         )
 
         return super().apply(([request],), {}, *_args, **_kwargs)
