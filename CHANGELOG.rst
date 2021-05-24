@@ -3,11 +3,14 @@
 Changelog
 #########
 
-next
-====
+0.5 2021-05-24
+==============
 
 * Support Celery 5.1. (`#27 <https://github.com/clokep/celery-batches/pull/27>`_)
 * Clean-up unnecessary code. (`#28 <https://github.com/clokep/celery-batches/pull/27>`_)
+* Fix storing of results in the
+  `RPC Result Backend <https://docs.celeryproject.org/en/v5.1.0/userguide/tasks.html#rpc-result-backend-rabbitmq-qpid>`_).
+  (`#30 <https://github.com/clokep/celery-batches/pull/30>`_)
 * CI improvements. (`#25 <https://github.com/clokep/celery-batches/pull/25>`_)
 
 0.4 2020-11-30
