@@ -14,7 +14,7 @@ def long_description():
 setuptools.setup(
     name='celery-batches',
     packages=setuptools.find_packages(),
-    version='0.5',
+    version='0.6dev',
     description='Experimental task class that buffers messages and processes them as a list.',
     long_description=long_description(),
     long_description_content_type='text/x-rst',
