@@ -268,10 +268,6 @@ class Batches(Task):
 
         return super().apply(([request],), {}, *_args, **_kwargs)
 
-    def flush(self, requests):
-        return self.apply_buffer(requests, ([SimpleRequest.from_request(r)
-                                             for r in requests],))
-
     def _do_flush(self):
         logger.debug('Batches: Wake-up to flush buffer...')
         requests = None
@@ -286,10 +282,13 @@ class Batches(Task):
                 self._tref.cancel()  # cancel timer.
             self._tref = None
 
-    def apply_buffer(self, requests, args=(), kwargs={}):
+    def flush(self, requests):
         acks_late = [], []
         [acks_late[r.task.acks_late].append(r) for r in requests]
         assert requests and (acks_late[True] or acks_late[False])
+
+        # Ensure the requests can be serialized using pickle for the prefork pool.
+        serializable_requests = ([SimpleRequest.from_request(r) for r in requests],)
 
         def on_accepted(pid, time_accepted):
             [req.acknowledge() for req in acks_late[False]]
@@ -299,7 +298,7 @@ class Batches(Task):
 
         return self._pool.apply_async(
             apply_batches_task,
-            (self, args, 0, None),
+            (self, serializable_requests, 0, None),
             accept_callback=on_accepted,
             callback=acks_late[True] and on_return or noop,
         )
