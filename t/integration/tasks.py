@@ -46,4 +46,4 @@ def cumadd(requests):
     result = 0
     for request in requests:
         result += request.args[0]
-        current_app.backend.mark_as_done(request.id, result)
+        current_app.backend.mark_as_done(request.id, result, request=request)

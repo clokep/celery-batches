@@ -163,6 +163,9 @@ class SimpleRequest:
     #: worker node name
     hostname = None
 
+    #: if the results of this request should be ignored
+    ignore_result = None
+
     #: used by rpc backend when failures reported by parent process
     reply_to = None
 
@@ -172,13 +175,14 @@ class SimpleRequest:
     #: TODO
     chord = None
 
-    def __init__(self, id, name, args, kwargs, delivery_info, hostname, reply_to, correlation_id):
+    def __init__(self, id, name, args, kwargs, delivery_info, hostname, ignore_result, reply_to, correlation_id):
         self.id = id
         self.name = name
         self.args = args
         self.kwargs = kwargs
         self.delivery_info = delivery_info
         self.hostname = hostname
+        self.ignore_result = ignore_result
         self.reply_to = reply_to
         self.correlation_id = correlation_id
 
@@ -186,9 +190,11 @@ class SimpleRequest:
     def from_request(cls, request):
         # Support both protocol v1 and v2.
         args, kwargs, embed = request._payload
+        # Celery 5.1.0 added an ignore_result option.
+        ignore_result = getattr(request, "ignore_result", False)
         return cls(request.id, request.name, args,
                    kwargs, request.delivery_info, request.hostname,
-                   request.reply_to, request.correlation_id)
+                   ignore_result, request.reply_to, request.correlation_id)
 
 
 class Batches(Task):
@@ -246,7 +252,7 @@ class Batches(Task):
 
         return task_message_handler
 
-    def apply(self, args=None, kwargs=None, *_args, **_kwargs):
+    def apply(self, args=None, kwargs=None, *_args, **options):
         """
         Execute this task locally as a batch of size 1, by blocking until the task returns.
 
@@ -256,17 +262,23 @@ class Batches(Task):
             celery.result.EagerResult: pre-evaluated result.
         """
         request = SimpleRequest(
-            id=_kwargs.get("task_id", uuid()),
+            id=options.get("task_id", uuid()),
             name="batch request",
             args=args or (),
             kwargs=kwargs or {},
-            delivery_info={'is_eager': True},
+            delivery_info={
+                'is_eager': True,
+                'exchange': options.get('exchange'),
+                'routing_key': options.get('routing_key'),
+                'priority': options.get('priority'),
+            },
             hostname=gethostname(),
+            ignore_result=options.get("ignore_result", False),
             reply_to=None,
             correlation_id=None,
         )
 
-        return super().apply(([request],), {}, *_args, **_kwargs)
+        return super().apply(([request],), {}, *_args, **options)
 
     def _do_flush(self):
         logger.debug('Batches: Wake-up to flush buffer...')
