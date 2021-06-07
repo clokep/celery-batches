@@ -94,13 +94,13 @@ Using the API is done as follows::
 from itertools import count
 from queue import Empty, Queue
 
+from celery import signals
 from celery.app.task import Task
 from celery.utils import noop
 from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
 from celery.worker.request import Request
 from celery.worker.strategy import proto1_to_proto2
-
 from kombu.utils.uuid import uuid
 
 from celery_batches.trace import apply_batches_task
@@ -219,6 +219,9 @@ class Batches(Task):
         self._pool = consumer.pool
         hostname = consumer.hostname
         eventer = consumer.event_dispatcher
+        events = eventer and eventer.enabled
+        send_event = eventer and eventer.send
+        task_sends_events = events and task.send_events
         Req = Request
         connection_errors = consumer.connection_errors
         timer = consumer.timer
@@ -241,6 +244,21 @@ class Batches(Task):
                 connection_errors=connection_errors,
             )
             put_buffer(request)
+            signals.task_received.send(sender=consumer, request=request) # Emit task received signal
+            if task_sends_events:
+                # Emit task received event
+                send_event(
+                    "task-received",
+                    uuid=request.id,
+                    name=request.name,
+                    args=request.argsrepr,
+                    kwargs=request.kwargsrepr,
+                    root_id=request.root_id,
+                    parent_id=request.parent_id,
+                    retries=request.request_dict.get("retries", 0),
+                    eta=request.eta and request.eta.isoformat(),
+                    expires=request.expires and request.expires.isoformat(),
+                )
 
             if self._tref is None:     # first request starts flush timer.
                 self._tref = timer.call_repeatedly(
@@ -304,6 +322,11 @@ class Batches(Task):
 
         def on_accepted(pid, time_accepted):
             [req.acknowledge() for req in acks_late[False]]
+            for req in requests:
+                # Start time of the task, which will be useful in calculating runtime of the task
+                req.start_time = time_accepted
+                # Emit task started event
+                req.send_event("task-started")
 
         def on_return(result):
             [req.acknowledge() for req in acks_late[True]]
