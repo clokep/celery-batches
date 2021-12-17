@@ -24,7 +24,7 @@ setuptools.setup(
     url='https://github.com/clokep/celery-batches',
     license='BSD',
     platforms=['any'],
-    install_requires=['celery>=4.4,<5.2'],
+    install_requires=['celery>=4.4,<5.3'],
     python_requires=">=3.6,",
     classifiers=[
         'Development Status :: 3 - Alpha',
