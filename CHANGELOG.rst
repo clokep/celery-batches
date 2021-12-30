@@ -3,8 +3,8 @@
 Changelog
 #########
 
-next
-====
+0.6 2021-12-30
+==============
 
 * Fix a bug when passing a ``request`` to ``mark_as_done`` with Celery 5.1.0.
   (`#32 <https://github.com/clokep/celery-batches/pull/32>`_)
