@@ -10,6 +10,7 @@ next
   (`#32 <https://github.com/clokep/celery-batches/pull/32>`_)
 * Clean-up and re-organize code. (`#31 <https://github.com/clokep/celery-batches/pull/31>`_)
 * Support Celery 5.2. (`#36 <https://github.com/clokep/celery-batches/pull/36>`_)
+* Drop support for Python 3.6. (`#36 <https://github.com/clokep/celery-batches/pull/36>`_)
 * Support Python 3.10. (`#36 <https://github.com/clokep/celery-batches/pull/36>`_)
 
 0.5 2021-05-24
