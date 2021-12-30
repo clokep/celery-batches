@@ -17,7 +17,7 @@ What do I need?
 
 celery-batches version runs on,
 
-- Python (3.6, 3.7, 3.8, 3.9, 3.10)
+- Python (3.7, 3.8, 3.9, 3.10)
 - PyPy3 (7.6)
 
 And is tested with Celery >= 4.4.
@@ -25,15 +25,16 @@ And is tested with Celery >= 4.4.
 If you're running an older version of Python, you need to be running
 an older version of celery-batches:
 
-- Python 2.7: celery-batches 0.3 series.
-- Python 3.4: celery-batches 0.2 series.
-- Python 3.5: celery-batches 0.3 series.
+- Python 2.7: celery-batches 0.3.
+- Python 3.4: celery-batches 0.2.
+- Python 3.5: celery-batches 0.3.
+- Python 3.6: celery-batches 0.5.
 
 If you're running an older version of Celery, you need to be running
 an older version of celery-batches:
 
 - Celery < 4.0: Use `celery.contrib.batches` instead.
-- Celery 4.0 - 4.3: celery-batches 0.3 series.
+- Celery 4.0 - 4.3: celery-batches 0.3.
 
 History
 =======
