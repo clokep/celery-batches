@@ -3,6 +3,12 @@
 Changelog
 #########
 
+next
+====
+
+* Support passing multiple or keyword arguments disabling Celery's ``typing``
+  feature for ``Batch`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
+
 0.6 2021-12-30
 ==============
 
