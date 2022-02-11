@@ -216,6 +216,10 @@ class Batches(Task):
         raise NotImplementedError('must implement run(requests)')
 
     def Strategy(self, task, app, consumer):
+        # See celery.worker.strategy.default for inspiration.
+        #
+        # This adds to a buffer at the end, instead of executing the task as
+        # the default strategy does.
         self._pool = consumer.pool
         hostname = consumer.hostname
         eventer = consumer.event_dispatcher
