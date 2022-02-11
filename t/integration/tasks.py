@@ -32,7 +32,7 @@ def add(requests):
     """Add the first argument of each call."""
     result = 0
     for request in requests:
-        result += request.args[0]
+        result += sum(request.args) + sum(request.kwargs.values())
 
     Results().set(result)
     return result
