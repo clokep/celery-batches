@@ -6,8 +6,9 @@ Changelog
 next
 ====
 
-* Support passing multiple or keyword arguments disabling Celery's ``typing``
+* Support passing multiple or keyword arguments by disabling Celery's ``typing``
   feature for ``Batch`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
+* Fix running of tests via tox. (`#40 <https://github.com/clokep/celery-batches/pull/40>`_)
 
 0.6 2021-12-30
 ==============
