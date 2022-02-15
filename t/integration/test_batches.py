@@ -68,6 +68,28 @@ def test_apply():
     assert Results().get() == 1
 
 
+def test_multi_arg(celery_worker):
+    """The batch task runs after two calls."""
+    add.delay(1, 2)
+    add.delay(3, 4)
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    assert Results().get() == 10
+
+
+def test_kwarg(celery_worker):
+    """The batch task runs after two calls."""
+    add.delay(a=1, b=2)
+    add.delay(a=3, b=4)
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    assert Results().get() == 10
+
+
 def test_flush_interval(celery_worker):
     """The batch task runs after the flush interval has elapsed."""
     add.delay(1)

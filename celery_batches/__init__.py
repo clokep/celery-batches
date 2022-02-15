@@ -200,6 +200,14 @@ class SimpleRequest:
 class Batches(Task):
     abstract = True
 
+    # Disable typing since the signature of batch tasks take only a single item
+    # (the list of SimpleRequest objects), but when calling it it should be
+    # possible to provide more arguments.
+    #
+    # This unfortunately pushes more onto the user to ensure that each call to
+    # a batch task is using the expected signature.
+    typing = False
+
     #: Maximum number of message in buffer.
     flush_every = 10
 
