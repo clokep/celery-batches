@@ -1,7 +1,4 @@
 """
-celery_batches
-==============
-
 Experimental task class that buffers messages and processes them as a list. Task
 requests are buffered in memory (on a worker) until either the flush count or
 flush interval is reached. Once the requests are flushed, they are sent to the
