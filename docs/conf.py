@@ -39,6 +39,8 @@ html_sidebars = {
     ]
 }
 
+html_theme_options = {"show_related": True}
+
 htmlhelp_basename = "CeleryBatchesdoc"
 
 latex_documents = [
