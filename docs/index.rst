@@ -90,27 +90,8 @@ Using the API is done as follows::
         from celery import current_app
         current_app.backend.mark_as_done(request.id, response, request=request)
 
-
-API
----
-
-.. currentmodule:: celery_batches
-
-.. automodule:: celery_batches
-
-    **API**
-
-    .. autoclass:: Batches
-        :members:
-        :undoc-members:
-    .. autoclass:: SimpleRequest
-        :members:
-        :undoc-members:
-
-Additional notes
-----------------
-
 .. toctree::
-   :maxdepth: 2
+   :hidden:
 
+   api
    history
