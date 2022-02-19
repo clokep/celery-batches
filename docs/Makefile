@@ -8,6 +8,9 @@ SPHINXPROJ    = CeleryBatches
 SOURCEDIR     = .
 BUILDDIR      = _build
 
+# Custom variables we added (not from sphinx itself)
+HTTP_PORT     = 8038  # For usage with "make serve", "make serve HTTP_PORT=8999"
+
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
@@ -18,3 +21,7 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+# Custom tasks we added (not from sphinx itself)
+serve:
+	python -m http.server ${HTTP_PORT} --directory _build/html
