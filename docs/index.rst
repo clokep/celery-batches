@@ -1,3 +1,7 @@
+##############
+celery-batches
+##############
+
 .. currentmodule:: celery_batches
 
 .. automodule:: celery_batches
@@ -10,3 +14,11 @@
     .. autoclass:: SimpleRequest
         :members:
         :undoc-members:
+
+Additional notes
+----------------
+
+.. toctree::
+   :maxdepth: 2
+
+   history
