@@ -1,6 +1,9 @@
 Celery Batches
 ==============
 
+.. image:: https://img.shields.io/pypi/v/celery-batches.svg
+    :target: https://pypi.org/project/celery-batches/
+
 .. image:: https://api.travis-ci.com/clokep/celery-batches.svg?branch=main
     :target: https://travis-ci.com/clokep/celery-batches
 
