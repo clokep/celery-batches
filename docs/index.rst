@@ -52,8 +52,9 @@ messages, and every 10 seconds.
 
 .. code-block:: python
 
-    import requests
-    from urlparse import urlparse
+    import json
+    from urllib.parse import urlencode, urlparse
+    from urllib.request import urlopen
 
     from celery_batches import Batches
 
@@ -72,11 +73,13 @@ messages, and every 10 seconds.
 
     def wot_api_real(urls):
         domains = [urlparse(url).netloc for url in urls]
-        response = requests.get(
+        query_string = urlencode({'hosts': ('/').join(set(domains)) + '/'})
+        data = query_string.encode('ascii')
+        response = urlopen(
             wot_api_target,
-            params={'hosts': ('/').join(set(domains)) + '/'}
+            data
         )
-        return [response.json[domain] for domain in domains]
+        return [json.load(response)[domain] for domain in domains]
 
 Using the API is done as follows::
 
