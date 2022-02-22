@@ -4,8 +4,8 @@ Celery Batches
 .. image:: https://img.shields.io/pypi/v/celery-batches.svg
     :target: https://pypi.org/project/celery-batches/
 
-.. image:: https://api.travis-ci.com/clokep/celery-batches.svg?branch=main
-    :target: https://travis-ci.com/clokep/celery-batches
+.. image:: https://github.com/clokep/celery-batches/actions/workflows/main.yml/badge.svg
+    :target: https://github.com/clokep/celery-batches/actions/workflows/main.yml
 
 .. image:: https://readthedocs.org/projects/celery-batches/badge/?version=latest
     :target: https://celery-batches.readthedocs.io/en/latest/?badge=latest
