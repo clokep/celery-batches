@@ -6,8 +6,15 @@ Changelog
 next
 ====
 
+Improvements
+------------
+
 * Support passing multiple or keyword arguments by disabling Celery's ``typing``
   feature for ``Batch`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
+
+Maintenance
+-----------
+
 * Fix running of tests via tox. (`#40 <https://github.com/clokep/celery-batches/pull/40>`_)
 * Improve PyPI metadata. (`#43 <https://github.com/clokep/celery-batches/pull/43>`_)
 * Ignore virtualenvs in `.gitignore`. (`#44 <https://github.com/clokep/celery-batches/pull/44>`_)
