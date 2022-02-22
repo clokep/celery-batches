@@ -26,8 +26,15 @@ Maintenance
 0.6 2021-12-30
 ==============
 
+Improvements
+------------
+
 * Fix a bug when passing a ``request`` to ``mark_as_done`` with Celery 5.1.0.
   (`#32 <https://github.com/clokep/celery-batches/pull/32>`_)
+
+Maintenance
+-----------
+
 * Clean-up and re-organize code. (`#31 <https://github.com/clokep/celery-batches/pull/31>`_)
 * Support Celery 5.2. (`#36 <https://github.com/clokep/celery-batches/pull/36>`_)
 * Drop support for Python 3.6. (`#36 <https://github.com/clokep/celery-batches/pull/36>`_)
@@ -38,15 +45,25 @@ Maintenance
 0.5 2021-05-24
 ==============
 
-* Support Celery 5.1. (`#27 <https://github.com/clokep/celery-batches/pull/27>`_)
-* Clean-up unnecessary code. (`#28 <https://github.com/clokep/celery-batches/pull/27>`_)
+Improvements
+------------
+
 * Fix storing of results in the
   `RPC Result Backend <https://docs.celeryproject.org/en/v5.1.0/userguide/tasks.html#rpc-result-backend-rabbitmq-qpid>`_).
   (`#30 <https://github.com/clokep/celery-batches/pull/30>`_)
+
+Maintenance
+-----------
+
+* Support Celery 5.1. (`#27 <https://github.com/clokep/celery-batches/pull/27>`_)
+* Clean-up unnecessary code. (`#28 <https://github.com/clokep/celery-batches/pull/27>`_)
 * CI improvements. (`#25 <https://github.com/clokep/celery-batches/pull/25>`_)
 
 0.4 2020-11-30
 ==============
+
+Maintenance
+-----------
 
 * Support Celery 5.0. Drop support for Celery < 4.4. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
 * Drop support for Python < 3.6. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
@@ -54,12 +71,19 @@ Maintenance
 0.3 2020-01-29
 ==============
 
+Improvements
+------------
+
 * Properly set the ``current_task`` when running ``Batch`` tasks. (`#4 <https://github.com/clokep/celery-batches/pull/4>`_)
 * Call the success signal after a successful run of the ``Batch`` task. (`#6 <https://github.com/clokep/celery-batches/pull/6>`_)
 * Support running tasks eagerly via the ``Task.apply()`` method. This causes
   the task to execute with a batch of a single item. Contributed by
   `@scalen <https://github.com/scalen>`_. (`#16 <https://github.com/clokep/celery-batches/pull/16>`_,
   `#18 <https://github.com/clokep/celery-batches/pull/18>`_)
+
+Maintenance
+-----------
+
 * Improved documentation. Contributed by
   `@nijel <https://github.com/nijel>`_. (`#3 <https://github.com/clokep/celery-batches/pull/3>`_,
   `#7 <https://github.com/clokep/celery-batches/pull/7>`_)
@@ -74,7 +98,14 @@ Maintenance
 0.2 2018-04-20
 ==============
 
+Improvements
+------------
+
 * Add support for protocol v2. (`#1 <https://github.com/clokep/celery-batches/pull/1>`_)
+
+Maintenance
+-----------
+
 * Add tests. (`#1 <https://github.com/clokep/celery-batches/pull/1>`_,
   `#2 <https://github.com/clokep/celery-batches/pull/2>`_)
 * Fixes some documentation issues. (`#1 <https://github.com/clokep/celery-batches/pull/1>`_)
@@ -82,9 +113,16 @@ Maintenance
 0.1 2018-03-23
 ==============
 
+Improvements
+------------
+
+* Batch tasks now call pre- and post-run signals.
+
+Maintenance
+-----------
+
 * The initial released version, includes changes to make it a separate package,
   etc.
-* Batch tasks now call pre- and post-run signals.
 
 celery-final
 ============
