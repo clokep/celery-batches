@@ -17,11 +17,17 @@ Maintenance
 
 * Fix running of tests via tox. (`#40 <https://github.com/clokep/celery-batches/pull/40>`_)
 * Improve PyPI metadata. (`#43 <https://github.com/clokep/celery-batches/pull/43>`_)
-* Ignore virtualenvs in `.gitignore`. (`#44 <https://github.com/clokep/celery-batches/pull/44>`_)
+* Ignore virtualenvs in `.gitignore`. Contributed by `@tony <https://github.com/tony>`_.
+  (`#44 <https://github.com/clokep/celery-batches/pull/44>`_)
 * Update README badges to include PyPI and GitHub Actions (instead of Travis CI).
+  Contributed by `@tony <https://github.com/tony>`_.
   (`#47 <https://github.com/clokep/celery-batches/pull/47>`_)
-* Update copyright information. (`#46 <https://github.com/clokep/celery-batches/pull/46>`_)
-* Improve documentation. (`#45 <https://github.com/clokep/celery-batches/pull/45>`_)
+* Update copyright information.  Contributed by `@tony <https://github.com/tony>`_.
+  (`#46 <https://github.com/clokep/celery-batches/pull/46>`_)
+* Improve documentation. Contributed by `@tony <https://github.com/tony>`_.
+  (`#45 <https://github.com/clokep/celery-batches/pull/45>`_,
+  `#49 <https://github.com/clokep/celery-batches/pull/49>`_,
+  `#50 <https://github.com/clokep/celery-batches/pull/50>`_)
 
 0.6 2021-12-30
 ==============
