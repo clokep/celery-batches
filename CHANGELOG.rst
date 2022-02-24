@@ -16,7 +16,8 @@ Maintenance
 -----------
 
 * Fix running of tests via tox. (`#40 <https://github.com/clokep/celery-batches/pull/40>`_)
-* Improve PyPI metadata. (`#43 <https://github.com/clokep/celery-batches/pull/43>`_)
+* Improve PyPI metadata. (`#43 <https://github.com/clokep/celery-batches/pull/43>`_,
+  `#52 <https://github.com/clokep/celery-batches/pull/52>`_)
 * Ignore virtualenvs in `.gitignore`. Contributed by `@tony <https://github.com/tony>`_.
   (`#44 <https://github.com/clokep/celery-batches/pull/44>`_)
 * Update README badges to include PyPI and GitHub Actions (instead of Travis CI).
@@ -29,11 +30,12 @@ Maintenance
   `#49 <https://github.com/clokep/celery-batches/pull/49>`_,
   `#50 <https://github.com/clokep/celery-batches/pull/50>`_)
 
-0.6 2021-12-30
-==============
 
-Improvements
-------------
+0.6 (2021-12-30)
+================
+
+Bugfixes
+--------
 
 * Fix a bug when passing a ``request`` to ``mark_as_done`` with Celery 5.1.0.
   (`#32 <https://github.com/clokep/celery-batches/pull/32>`_)
@@ -48,11 +50,12 @@ Maintenance
 * Changed packaging to use setuptools declarative config in ``setup.cfg``.
   (`#37 <https://github.com/clokep/celery-batches/pull/37>`_)
 
-0.5 2021-05-24
-==============
 
-Improvements
-------------
+0.5 (2021-05-24)
+================
+
+Bugfixes
+--------
 
 * Fix storing of results in the
   `RPC Result Backend <https://docs.celeryproject.org/en/v5.1.0/userguide/tasks.html#rpc-result-backend-rabbitmq-qpid>`_).
@@ -65,8 +68,9 @@ Maintenance
 * Clean-up unnecessary code. (`#28 <https://github.com/clokep/celery-batches/pull/27>`_)
 * CI improvements. (`#25 <https://github.com/clokep/celery-batches/pull/25>`_)
 
-0.4 2020-11-30
-==============
+
+0.4 (2020-11-30)
+================
 
 Maintenance
 -----------
@@ -74,8 +78,9 @@ Maintenance
 * Support Celery 5.0. Drop support for Celery < 4.4. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
 * Drop support for Python < 3.6. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
 
-0.3 2020-01-29
-==============
+
+0.3 (2020-01-29)
+================
 
 Improvements
 ------------
@@ -101,8 +106,9 @@ Maintenance
   `#11 <https://github.com/clokep/celery-batches/pull/11>`_,
   `#13 <https://github.com/clokep/celery-batches/pull/13>`_,)
 
-0.2 2018-04-20
-==============
+
+0.2 (2018-04-20)
+================
 
 Improvements
 ------------
@@ -116,13 +122,14 @@ Maintenance
   `#2 <https://github.com/clokep/celery-batches/pull/2>`_)
 * Fixes some documentation issues. (`#1 <https://github.com/clokep/celery-batches/pull/1>`_)
 
-0.1 2018-03-23
-==============
+
+0.1 (2018-03-23)
+================
 
 Improvements
 ------------
 
-* Batch tasks now call pre- and post-run signals.
+* ``Batch`` tasks now call pre- and post-run signals.
 
 Maintenance
 -----------
@@ -130,8 +137,12 @@ Maintenance
 * The initial released version, includes changes to make it a separate package,
   etc.
 
+
 celery-final
-============
+==============
 
 * The final version of ``celery.contrib.batches`` before it was removed in
-  4b3ab708778a3772d24bb39142b7e9d5b94c488b.
+  |4b3ab708778a3772d24bb39142b7e9d5b94c488b|_.
+
+.. |4b3ab708778a3772d24bb39142b7e9d5b94c488b| replace:: ``4b3ab708778a3772d24bb39142b7e9d5b94c488b``
+.. _4b3ab708778a3772d24bb39142b7e9d5b94c488b: https://github.com/celery/celery/commit/4b3ab708778a3772d24bb39142b7e9d5b94c488b
