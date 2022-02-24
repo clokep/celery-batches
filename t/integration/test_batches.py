@@ -5,7 +5,9 @@ from celery.app.task import Task
 from celery.result import allow_join_result
 from celery.contrib.testing.tasks import ping
 
-from .tasks import add, cumadd, Results
+import pytest
+
+from .tasks import add, cumadd
 
 
 class SignalCounter:
@@ -44,19 +46,14 @@ def _wait_for_ping(ping_task_timeout=10.0):
         assert ping.delay().get(timeout=ping_task_timeout) == 'pong'
 
 
-def test_always_eager():
+@pytest.mark.usefixtures('depends_on_current_app')
+def test_always_eager(celery_app):
     """The batch task runs immediately, in the same thread."""
-    app = add._get_app()
-    task_always_eager = app.conf.task_always_eager
-    app.conf["task_always_eager"] = True
-
+    celery_app.conf.task_always_eager = True
     result = add.delay(1)
-
-    app.conf["task_always_eager"] = task_always_eager
 
     # An EagerResult that resolve to 1 should be returned.
     assert result.get() == 1
-    assert Results().get() == 1
 
 
 def test_apply():
@@ -65,12 +62,11 @@ def test_apply():
 
     # An EagerResult that resolve to 1 should be returned.
     assert result.get() == 1
-    assert Results().get() == 1
 
 
 def test_flush_interval(celery_worker):
     """The batch task runs after the flush interval has elapsed."""
-    add.delay(1)
+    result = add.delay(1)
 
     # The flush interval is 1 second, this is longer.
     sleep(2)
@@ -78,40 +74,43 @@ def test_flush_interval(celery_worker):
     # Let the worker work.
     _wait_for_ping()
 
-    assert Results().get() == 1
+    assert result.get() == 1
 
 
 def test_flush_calls(celery_worker):
     """The batch task runs after two calls."""
-    add.delay(1)
-    add.delay(3)
+    result_1 = add.delay(1)
+    result_2 = add.delay(3)
 
     # Let the worker work.
     _wait_for_ping()
 
-    assert Results().get() == 4
+    assert result_1.get() == 4
+    assert result_2.get() == 4
 
 
 def test_multi_arg(celery_worker):
     """The batch task runs after two calls."""
-    add.delay(1, 2)
-    add.delay(3, 4)
+    result_1 = add.delay(1, 2)
+    result_2 = add.delay(3, 4)
 
     # Let the worker work.
     _wait_for_ping()
 
-    assert Results().get() == 10
+    assert result_1.get() == 10
+    assert result_2.get() == 10
 
 
 def test_kwarg(celery_worker):
     """The batch task runs after two calls."""
-    add.delay(a=1, b=2)
-    add.delay(a=3, b=4)
+    result_1 = add.delay(a=1, b=2)
+    result_2 = add.delay(a=3, b=4)
 
     # Let the worker work.
     _wait_for_ping()
 
-    assert Results().get() == 10
+    assert result_1.get() == 10
+    assert result_2.get() == 10
 
 
 def test_result(celery_worker):
@@ -151,14 +150,15 @@ def test_signals(celery_app, celery_worker):
         signal_counters.append(counter)
 
     # The batch runs after 2 task calls.
-    add.delay(1)
-    add.delay(3)
+    result_1 = add.delay(1)
+    result_2 = add.delay(3)
 
     # Let the worker work.
     _wait_for_ping()
 
     # Should still have the correct result.
-    assert Results().get() == 4
+    assert result_1.get() == 4
+    assert result_2.get() == 4
 
     for counter in signal_counters:
         counter.assert_calls()
@@ -173,14 +173,16 @@ def test_current_task(celery_app, celery_worker):
     signals.task_prerun.connect(counter)
 
     # The batch runs after 2 task calls.
-    add.delay(1)
-    add.delay(3)
+    result_1 = add.delay(1)
+    result_2 = add.delay(3)
 
     # Let the worker work.
     _wait_for_ping()
 
     # Should still have the correct result.
-    assert Results().get() == 4
+    assert result_1.get() == 4
+    assert result_2.get() == 4
+
     counter.assert_calls()
 
 # TODO
