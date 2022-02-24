@@ -29,17 +29,18 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 pygments_style = "sphinx"
 
-html_theme = "alabaster"
+html_theme = "furo"
 
 html_sidebars = {
     "**": [
-        "globaltoc.html",
-        "relations.html",  # needs 'show_related': True theme option to display
-        "searchbox.html",
+        "sidebar/scroll-start.html",
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/ethical-ads.html",
+        "sidebar/scroll-end.html",
     ]
 }
-
-html_theme_options = {"show_related": True}
 
 htmlhelp_basename = "CeleryBatchesdoc"
 
