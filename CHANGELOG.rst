@@ -28,7 +28,8 @@ Maintenance
 * Improve documentation. Contributed by `@tony <https://github.com/tony>`_.
   (`#45 <https://github.com/clokep/celery-batches/pull/45>`_,
   `#49 <https://github.com/clokep/celery-batches/pull/49>`_,
-  `#50 <https://github.com/clokep/celery-batches/pull/50>`_)
+  `#50 <https://github.com/clokep/celery-batches/pull/50>`_,
+  `#55 <https://github.com/clokep/celery-batches/pull/55>`_)
 
 
 0.6 (2021-12-30)
