@@ -19,14 +19,14 @@ Maintenance
 * Simplify tests. (`#56 <https://github.com/clokep/celery-batches/pull/56>`_)
 * Improve PyPI metadata. (`#43 <https://github.com/clokep/celery-batches/pull/43>`_,
   `#52 <https://github.com/clokep/celery-batches/pull/52>`_)
-* Ignore virtualenvs in `.gitignore`. Contributed by `@tony <https://github.com/tony>`_.
+* Ignore virtualenvs in `.gitignore`. Contributed by `Tony Narlock <https://github.com/tony>`_.
   (`#44 <https://github.com/clokep/celery-batches/pull/44>`_)
 * Update README badges to include PyPI and GitHub Actions (instead of Travis CI).
-  Contributed by `@tony <https://github.com/tony>`_.
+  Contributed by `Tony Narlock <https://github.com/tony>`_.
   (`#47 <https://github.com/clokep/celery-batches/pull/47>`_)
-* Update copyright information.  Contributed by `@tony <https://github.com/tony>`_.
+* Update copyright information.  Contributed by `Tony Narlock <https://github.com/tony>`_.
   (`#46 <https://github.com/clokep/celery-batches/pull/46>`_)
-* Improve documentation. Contributed by `@tony <https://github.com/tony>`_.
+* Improve documentation. Contributed by `Tony Narlock <https://github.com/tony>`_.
   (`#45 <https://github.com/clokep/celery-batches/pull/45>`_,
   `#49 <https://github.com/clokep/celery-batches/pull/49>`_,
   `#50 <https://github.com/clokep/celery-batches/pull/50>`_,
