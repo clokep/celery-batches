@@ -64,8 +64,12 @@ def test_apply():
     assert result.get() == 1
 
 
-def test_flush_interval(celery_worker):
+def test_flush_interval(celery_app, celery_worker):
     """The batch task runs after the flush interval has elapsed."""
+
+    if celery_app.conf.broker_url.startswith('redis'):
+        raise pytest.skip('Flaky on redis')
+
     result = add.delay(1)
 
     # The flush interval is 1 second, this is longer.
