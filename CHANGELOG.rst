@@ -16,6 +16,7 @@ Maintenance
 -----------
 
 * Fix running of tests via tox. (`#40 <https://github.com/clokep/celery-batches/pull/40>`_)
+* Simplify tests. (`#56 <https://github.com/clokep/celery-batches/pull/56>`_)
 * Improve PyPI metadata. (`#43 <https://github.com/clokep/celery-batches/pull/43>`_,
   `#52 <https://github.com/clokep/celery-batches/pull/52>`_)
 * Ignore virtualenvs in `.gitignore`. Contributed by `@tony <https://github.com/tony>`_.
