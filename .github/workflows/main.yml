@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade tox tox-gh-actions
 
       - name: "Run lint"
-        if: ${{ matrix.python-version == '3.6' }}
+        if: ${{ matrix.python-version == '3.7' }}
         env:
           TOXENV: "flake8"
         run: "python -m tox"
