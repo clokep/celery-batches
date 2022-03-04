@@ -15,7 +15,8 @@ Improvements
 Maintenance
 -----------
 
-* Fix running of tests via tox. (`#40 <https://github.com/clokep/celery-batches/pull/40>`_)
+* Fix running of tests via tox. (`#40 <https://github.com/clokep/celery-batches/pull/40>`_,
+  `#58 <https://github.com/clokep/celery-batches/pull/58>`_)
 * Simplify tests. (`#56 <https://github.com/clokep/celery-batches/pull/56>`_)
 * Improve PyPI metadata. (`#43 <https://github.com/clokep/celery-batches/pull/43>`_,
   `#52 <https://github.com/clokep/celery-batches/pull/52>`_)
