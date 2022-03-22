@@ -185,6 +185,7 @@ def test_current_task(celery_app, celery_worker):
 
     counter.assert_calls()
 
+
 def test_retry(celery_app, celery_worker):
     """The batch task fails on the first call, is retried and succeeds."""
     def signal(sender, **kwargs):
@@ -195,7 +196,7 @@ def test_retry(celery_app, celery_worker):
     signals.task_success.connect(counter)
 
     result_1 = retry_if_even.delay(1)
-    result_2 = retry_if_even.delay(2)
+    retry_if_even.delay(2)
 
     # The flush interval is 1 second and the retry interval is 3 seconds, this is longer.
     sleep(5)
@@ -203,9 +204,9 @@ def test_retry(celery_app, celery_worker):
     # Let the worker work.
     _wait_for_ping()
 
-    assert result_1.get() == True
+    assert result_1.get() is True
 
-    # result_2 is not valid and the retried task is not accessible here
+    # The retried task is not accessible here for validation.
 
     counter.assert_calls()
 

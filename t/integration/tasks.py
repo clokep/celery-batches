@@ -32,6 +32,7 @@ def cumadd(requests):
         result += request.args[0]
         current_app.backend.mark_as_done(request.id, result, request=request)
 
+
 @shared_task(base=Batches, flush_every=2, flush_interval=1)
 def retry_if_even(requests):
     """Retry the task if the first argument of a request is even."""
