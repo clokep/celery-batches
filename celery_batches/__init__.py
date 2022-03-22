@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from itertools import count
 from queue import Empty, Queue
 
@@ -34,11 +35,21 @@ def consume_queue(queue):
 
     """
     get = queue.get_nowait
+    requests_to_requeue = []
     while 1:
         try:
-            yield get()
+            req = get()
+            if req.eta is not None:
+                if req.eta <= datetime.now(timezone.utc):
+                    yield req
+                else:
+                    requests_to_requeue.append(req)
+            else:
+                yield req
         except Empty:
             break
+    for req in requests_to_requeue:
+        queue.put_nowait(req)
 
 
 class SimpleRequest:
@@ -207,7 +218,7 @@ class Batches(Task):
             if requests:
                 logger.debug('Batches: Buffer complete: %s', len(requests))
                 self.flush(requests)
-        if not requests:
+        if not requests and self._buffer.qsize() == 0:
             logger.debug('Batches: Canceling timer: Nothing in buffer.')
             if self._tref:
                 self._tref.cancel()  # cancel timer.

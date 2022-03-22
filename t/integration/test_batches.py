@@ -7,7 +7,7 @@ from celery.contrib.testing.tasks import ping
 
 import pytest
 
-from .tasks import add, cumadd
+from .tasks import add, cumadd, retry_if_even
 
 
 class SignalCounter:
@@ -182,6 +182,30 @@ def test_current_task(celery_app, celery_worker):
     # Should still have the correct result.
     assert result_1.get() == 4
     assert result_2.get() == 4
+
+    counter.assert_calls()
+
+def test_retry(celery_app, celery_worker):
+    """The batch task fails on the first call, is retried and succeeds."""
+    def signal(sender, **kwargs):
+        assert celery_app.current_task.name == 't.integration.tasks.retry_if_even'
+
+    # One success, one failure and successful retry
+    counter = SignalCounter(2, signal)
+    signals.task_success.connect(counter)
+
+    result_1 = retry_if_even.delay(1)
+    result_2 = retry_if_even.delay(2)
+
+    # The flush interval is 1 second and the retry interval is 3 seconds, this is longer.
+    sleep(5)
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    assert result_1.get() == True
+
+    # result_2 is not valid and the retried task is not accessible here
 
     counter.assert_calls()
 
