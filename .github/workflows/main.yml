@@ -58,7 +58,7 @@ jobs:
         image: rabbitmq
         # Set health checks to wait until redis has started
         options: >-
-          --health-cmd "redis-cli ping"
+          --health-cmd "rabbitmq-diagnostics -q status"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
