@@ -80,7 +80,5 @@ jobs:
 
       - name: "Run tox targets"
         env:
-          TOX_SKIP_ENV: ".*celery[^5][^2].*"
-          TEST_BROKER: redis://
-          TEST_BACKEND: redis://
+          TOX_SKIP_ENV: ".*-[^i].*"
         run: "python -m tox"
