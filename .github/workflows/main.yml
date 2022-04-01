@@ -50,10 +50,20 @@ jobs:
         continue-on-error: true
 
   integration-tests:
-    name: "Latest Python + latest Celery + Redis"
+    name: "Integration tests"
     runs-on: ubuntu-latest
 
     services:
+      rabbitmq:
+        image: rabbitmq
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5672:5672
       redis:
         image: redis
         # Set health checks to wait until redis has started
