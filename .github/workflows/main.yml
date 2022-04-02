@@ -40,11 +40,57 @@ jobs:
 
       - name: "Run tox targets for ${{ matrix.python-version }}"
         env:
-          TOX_SKIP_ENV: ".*celerymaster.*"
+          TOX_SKIP_ENV: ".*celerymaster.*|.*integration.*"
         run: "python -m tox"
 
       - name: "Run tox targets for ${{ matrix.python-version }} for celery master"
         env:
-          TOX_SKIP_ENV: ".*celery[^m].*"
+          TOX_SKIP_ENV: ".*celery[^m].*|.*integration.*"
         run: "python -m tox"
         continue-on-error: true
+
+  integration-tests:
+    name: "Integration tests"
+    runs-on: ubuntu-latest
+
+    services:
+      rabbitmq:
+        image: rabbitmq
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5672:5672
+      redis:
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: "actions/setup-python@v2"
+        with:
+          python-version: "3.x"
+
+      - name: "Install dependencies"
+        run: |
+          set -xe
+          python -VV
+          python -m site
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade tox tox-gh-actions
+
+      - name: "Run tox targets"
+        env:
+          TOX_SKIP_ENV: ".*unit.*|flake8"
+        run: "python -m tox"
