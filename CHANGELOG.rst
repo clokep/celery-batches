@@ -32,6 +32,8 @@ Maintenance
   `#49 <https://github.com/clokep/celery-batches/pull/49>`_,
   `#50 <https://github.com/clokep/celery-batches/pull/50>`_,
   `#55 <https://github.com/clokep/celery-batches/pull/55>`_)
+* Run the unit tests against RabbitMQ & Redis brokers/backends.
+  (`#57 <https://github.com/clokep/celery-batches/pull/57>`_)
 
 
 0.6 (2021-12-30)
