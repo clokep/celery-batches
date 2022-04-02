@@ -2,8 +2,8 @@ from time import sleep
 
 from celery import signals
 from celery.app.task import Task
-from celery.result import allow_join_result
 from celery.contrib.testing.tasks import ping
+from celery.result import allow_join_result
 
 import pytest
 
