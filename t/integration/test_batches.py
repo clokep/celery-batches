@@ -23,7 +23,7 @@ class SignalCounter:
             sender_name = sender
 
         # Ignore pings, those are used to ensure the worker processes tasks.
-        if sender_name == 'celery.ping':
+        if sender_name == "celery.ping":
             return
 
         self.calls += 1
@@ -43,10 +43,10 @@ def _wait_for_ping(ping_task_timeout=10.0):
     This should ensure that any other running tasks are done.
     """
     with allow_join_result():
-        assert ping.delay().get(timeout=ping_task_timeout) == 'pong'
+        assert ping.delay().get(timeout=ping_task_timeout) == "pong"
 
 
-@pytest.mark.usefixtures('depends_on_current_app')
+@pytest.mark.usefixtures("depends_on_current_app")
 def test_always_eager(celery_app):
     """The batch task runs immediately, in the same thread."""
     celery_app.conf.task_always_eager = True
@@ -58,7 +58,7 @@ def test_always_eager(celery_app):
 
 def test_apply():
     """The batch task runs immediately, in the same thread."""
-    result = add.apply(args=(1, ))
+    result = add.apply(args=(1,))
 
     # An EagerResult that resolve to 1 should be returned.
     assert result.get() == 1
@@ -67,8 +67,8 @@ def test_apply():
 def test_flush_interval(celery_app, celery_worker):
     """The batch task runs after the flush interval has elapsed."""
 
-    if not celery_app.conf.broker_url.startswith('memory'):
-        raise pytest.skip('Flaky on live brokers')
+    if not celery_app.conf.broker_url.startswith("memory"):
+        raise pytest.skip("Flaky on live brokers")
 
     result = add.delay(1)
 
@@ -170,8 +170,9 @@ def test_signals(celery_app, celery_worker):
 
 def test_current_task(celery_app, celery_worker):
     """Ensure the current_task is properly set when running the task."""
+
     def signal(sender, **kwargs):
-        assert celery_app.current_task.name == 't.integration.tasks.add'
+        assert celery_app.current_task.name == "t.integration.tasks.add"
 
     counter = SignalCounter(1, signal)
     signals.task_prerun.connect(counter)
@@ -188,6 +189,7 @@ def test_current_task(celery_app, celery_worker):
     assert result_2.get() == 4
 
     counter.assert_calls()
+
 
 # TODO
 # * Test acking
