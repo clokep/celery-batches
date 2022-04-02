@@ -41,8 +41,7 @@ def apply_batches_task(task, args, loglevel, logfile):
     try:
         # -*- PRE -*-
         if prerun_receivers:
-            send_prerun(sender=task, task_id=task_id, task=task,
-                        args=args, kwargs={})
+            send_prerun(sender=task, task_id=task_id, task=task, args=args, kwargs={})
 
         # -*- TRACE -*-
         try:
@@ -51,16 +50,22 @@ def apply_batches_task(task, args, loglevel, logfile):
         except Exception as exc:
             result = None
             state = FAILURE
-            logger.error('Error: %r', exc, exc_info=True)
+            logger.error("Error: %r", exc, exc_info=True)
         else:
             if success_receivers:
                 send_success(sender=task, result=result)
     finally:
         try:
             if postrun_receivers:
-                send_postrun(sender=task, task_id=task_id, task=task,
-                             args=args, kwargs={},
-                             retval=result, state=state)
+                send_postrun(
+                    sender=task,
+                    task_id=task_id,
+                    task=task,
+                    args=args,
+                    kwargs={},
+                    retval=result,
+                    state=state,
+                )
         finally:
             pop_task()
             pop_request()

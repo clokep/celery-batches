@@ -11,7 +11,7 @@ from celery.worker.request import Request
 from celery.worker.strategy import proto1_to_proto2
 from kombu.utils.uuid import uuid
 
-__all__ = ['Batches']
+__all__ = ["Batches"]
 
 logger = get_logger(__name__)
 
@@ -81,7 +81,18 @@ class SimpleRequest:
     #: TODO
     chord = None
 
-    def __init__(self, id, name, args, kwargs, delivery_info, hostname, ignore_result, reply_to, correlation_id):
+    def __init__(
+        self,
+        id,
+        name,
+        args,
+        kwargs,
+        delivery_info,
+        hostname,
+        ignore_result,
+        reply_to,
+        correlation_id,
+    ):
         self.id = id
         self.name = name
         self.args = args
@@ -98,9 +109,17 @@ class SimpleRequest:
         args, kwargs, embed = request._payload
         # Celery 5.1.0 added an ignore_result option.
         ignore_result = getattr(request, "ignore_result", False)
-        return cls(request.id, request.name, args,
-                   kwargs, request.delivery_info, request.hostname,
-                   ignore_result, request.reply_to, request.correlation_id)
+        return cls(
+            request.id,
+            request.name,
+            args,
+            kwargs,
+            request.delivery_info,
+            request.hostname,
+            ignore_result,
+            request.reply_to,
+            request.correlation_id,
+        )
 
 
 class Batches(Task):
@@ -127,7 +146,7 @@ class Batches(Task):
         self._pool = None
 
     def run(self, requests):
-        raise NotImplementedError('must implement run(requests)')
+        raise NotImplementedError("must implement run(requests)")
 
     def Strategy(self, task, app, consumer):
         # See celery.worker.strategy.default for inspiration.
@@ -146,24 +165,32 @@ class Batches(Task):
         def task_message_handler(message, body, ack, reject, callbacks, **kw):
             if body is None:
                 body, headers, decoded, utc = (
-                    message.body, message.headers, False, True,
+                    message.body,
+                    message.headers,
+                    False,
+                    True,
                 )
             else:
                 body, headers, decoded, utc = proto1_to_proto2(message, body)
 
             request = Req(
                 message,
-                on_ack=ack, on_reject=reject, app=app, hostname=hostname,
-                eventer=eventer, task=task,
-                body=body, headers=headers, decoded=decoded, utc=utc,
+                on_ack=ack,
+                on_reject=reject,
+                app=app,
+                hostname=hostname,
+                eventer=eventer,
+                task=task,
+                body=body,
+                headers=headers,
+                decoded=decoded,
+                utc=utc,
                 connection_errors=connection_errors,
             )
             put_buffer(request)
 
-            if self._tref is None:     # first request starts flush timer.
-                self._tref = timer.call_repeatedly(
-                    self.flush_interval, flush_buffer,
-                )
+            if self._tref is None:  # first request starts flush timer.
+                self._tref = timer.call_repeatedly(self.flush_interval, flush_buffer)
 
             if not next(self._count) % self.flush_every:
                 flush_buffer()
@@ -185,10 +212,10 @@ class Batches(Task):
             args=args or (),
             kwargs=kwargs or {},
             delivery_info={
-                'is_eager': True,
-                'exchange': options.get('exchange'),
-                'routing_key': options.get('routing_key'),
-                'priority': options.get('priority'),
+                "is_eager": True,
+                "exchange": options.get("exchange"),
+                "routing_key": options.get("routing_key"),
+                "priority": options.get("priority"),
             },
             hostname=gethostname(),
             ignore_result=options.get("ignore_result", False),
@@ -199,15 +226,15 @@ class Batches(Task):
         return super().apply(([request],), {}, *_args, **options)
 
     def _do_flush(self):
-        logger.debug('Batches: Wake-up to flush buffer...')
+        logger.debug("Batches: Wake-up to flush buffer...")
         requests = None
         if self._buffer.qsize():
             requests = list(consume_queue(self._buffer))
             if requests:
-                logger.debug('Batches: Buffer complete: %s', len(requests))
+                logger.debug("Batches: Buffer complete: %s", len(requests))
                 self.flush(requests)
         if not requests:
-            logger.debug('Batches: Canceling timer: Nothing in buffer.')
+            logger.debug("Batches: Canceling timer: Nothing in buffer.")
             if self._tref:
                 self._tref.cancel()  # cancel timer.
             self._tref = None
