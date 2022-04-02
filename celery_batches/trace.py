@@ -9,7 +9,6 @@ from celery import signals, states
 from celery._state import _task_stack
 from celery.app.task import Context
 from celery.utils.log import get_logger
-
 from kombu.utils.uuid import uuid
 
 logger = get_logger(__name__)

@@ -1,16 +1,15 @@
 from itertools import count
 from queue import Empty, Queue
 
+from celery_batches.trace import apply_batches_task
+
 from celery.app.task import Task
 from celery.utils import noop
 from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
 from celery.worker.request import Request
 from celery.worker.strategy import proto1_to_proto2
-
 from kombu.utils.uuid import uuid
-
-from celery_batches.trace import apply_batches_task
 
 __all__ = ['Batches']
 
