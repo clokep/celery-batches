@@ -72,8 +72,8 @@ def test_flush_interval(celery_app, celery_worker):
 
     result = add.delay(1)
 
-    # The flush interval is 1 second, this is longer.
-    sleep(2)
+    # The flush interval is 0.1 second, this is longer.
+    sleep(0.2)
 
     # Let the worker work.
     _wait_for_ping()

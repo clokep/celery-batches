@@ -6,9 +6,13 @@ from celery_batches import Batches
 logger = get_task_logger(__name__)
 
 
-@shared_task(base=Batches, flush_every=2, flush_interval=1)
+@shared_task(base=Batches, flush_every=2, flush_interval=0.1)
 def add(requests):
-    """Add the first argument of each call."""
+    """
+    Add the first argument of each task.
+
+    Marks the result of each task as the sum.
+    """
     from celery import current_app
 
     result = 0
@@ -22,9 +26,13 @@ def add(requests):
     return result
 
 
-@shared_task(base=Batches, flush_every=2, flush_interval=1)
+@shared_task(base=Batches, flush_every=2, flush_interval=0.1)
 def cumadd(requests):
-    """Calculate the cumulative sum of the first arguments of each call."""
+    """
+    Calculate the cumulative sum of the first argument of each task.
+
+    Marks the result of each task as the sum at the point.
+    """
     from celery import current_app
 
     result = 0
