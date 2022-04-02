@@ -199,7 +199,7 @@ class Batches(Task):
 
     def apply(self, args=None, kwargs=None, *_args, **options):
         """
-        Execute this task locally as a batch of size 1, by blocking until the task returns.
+        Execute the task synchronously as a batch of size 1.
 
         Arguments:
             args (Tuple): positional arguments passed on to the task.
