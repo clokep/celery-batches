@@ -1,4 +1,4 @@
-from itertools import count
+from itertools import count, filterfalse, tee
 from queue import Empty, Queue
 from typing import (
     Any,
@@ -6,7 +6,6 @@ from typing import (
     Collection,
     Dict,
     Iterable,
-    List,
     NoReturn,
     Optional,
     Set,
@@ -60,6 +59,14 @@ def consume_queue(queue: Queue[T]) -> Iterable[T]:
             yield get()
         except Empty:
             break
+
+
+def partition(
+    predicate: Callable[[T], bool], iterable: Iterable[T]
+) -> Tuple[Iterable[T], Iterable[T]]:
+    "Use a predicate to partition entries into false entries and true entries"
+    t1, t2 = tee(iterable)
+    return filterfalse(predicate, t1), filter(predicate, t2)
 
 
 class SimpleRequest:
@@ -275,25 +282,23 @@ class Batches(Task):
             self._tref = None
 
     def flush(self, requests: Collection[Request]) -> Any:
-        acks_late: Tuple[List[Request], List[Request]] = [], []
-        [
-            acks_late[r.task.acks_late].append(r)  # type: ignore[func-returns-value]
-            for r in requests
-        ]
-        assert requests and (acks_late[True] or acks_late[False])
+        acks_early, acks_late = partition(
+            lambda r: r.task.acks_late, requests  # type: ignore[no-any-return]
+        )
+        assert requests and (acks_late or acks_early)
 
         # Ensure the requests can be serialized using pickle for the prefork pool.
         serializable_requests = ([SimpleRequest.from_request(r) for r in requests],)
 
         def on_accepted(pid: int, time_accepted: float) -> None:
-            [req.acknowledge() for req in acks_late[False]]
+            [req.acknowledge() for req in acks_early]
 
         def on_return(result: Optional[Any]) -> None:
-            [req.acknowledge() for req in acks_late[True]]
+            [req.acknowledge() for req in acks_late]
 
         return self._pool.apply_async(
             apply_batches_task,
             (self, serializable_requests, 0, None),
             accept_callback=on_accepted,
-            callback=acks_late[True] and on_return or noop,
+            callback=acks_late and on_return or noop,
         )
