@@ -73,7 +73,7 @@ def test_flush_interval(celery_app: Celery, celery_worker: TestWorkController) -
 
     if not celery_app.conf.broker_url.startswith("memory"):
         raise pytest.skip("Flaky on live brokers")
-    1 / 0
+
     result = add.delay(1)
 
     # The flush interval is 0.1 second, this is longer.
