@@ -277,7 +277,8 @@ class Batches(Task):
     def flush(self, requests: Collection[Request]) -> Any:
         acks_late: Tuple[List[Request], List[Request]] = [], []
         [
-            acks_late[r.task.acks_late].append(r) for r in requests  # type: ignore[func-returns-value]
+            acks_late[r.task.acks_late].append(r)  # type: ignore[func-returns-value]
+            for r in requests
         ]
         assert requests and (acks_late[True] or acks_late[False])
 
