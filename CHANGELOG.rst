@@ -35,6 +35,11 @@ Maintenance
   `#55 <https://github.com/clokep/celery-batches/pull/55>`_)
 * Run the unit tests against RabbitMQ & Redis brokers/backends.
   (`#57 <https://github.com/clokep/celery-batches/pull/57>`_)
+* Run `black <https://black.readthedocs.io/>`_, `isort <https://pycqa.github.io/isort/>`_,
+  `flake8 <https://flake8.pycqa.org>`_, `pyupgrade <https://github.com/asottile/pyupgrade>`_,
+  and ``mypy <https://mypy.readthedocs.io>`_.
+  (`#61 <https://github.com/clokep/celery-batches/pull/61/>`_,
+  `#62 <https://github.com/clokep/celery-batches/pull/62>`_)
 
 
 0.6 (2021-12-30)
