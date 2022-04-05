@@ -5,9 +5,10 @@ from celery_batches.trace import apply_batches_task
 
 from celery.app.task import Task
 from celery.utils import noop
+from celery.utils.imports import symbol_by_name
 from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
-from celery.worker.request import Request
+from celery.worker.request import create_request_cls
 from celery.worker.strategy import proto1_to_proto2
 from kombu.utils.uuid import uuid
 
@@ -154,10 +155,17 @@ class Batches(Task):
         # This adds to a buffer at the end, instead of executing the task as
         # the default strategy does.
         self._pool = consumer.pool
+
         hostname = consumer.hostname
-        eventer = consumer.event_dispatcher
-        Req = Request
         connection_errors = consumer.connection_errors
+
+        eventer = consumer.event_dispatcher
+
+        Request = symbol_by_name(task.Request)
+        Req = create_request_cls(
+            Request, task, consumer.pool, hostname, eventer, app=app
+        )
+
         timer = consumer.timer
         put_buffer = self._buffer.put
         flush_buffer = self._do_flush
