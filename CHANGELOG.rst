@@ -10,7 +10,9 @@ Improvements
 ------------
 
 * Support passing multiple or keyword arguments by disabling Celery's ``typing``
-  feature for ``Batch`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
+  feature for ``Batches`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
+* Support [using a custom ``Request``](https://docs.celeryq.dev/en/stable/userguide/tasks.html)
+  for ``Batches`` tasks. (`#63 <https://github.com/clokep/celery-batches/pull/63>`_)
 
 Maintenance
 -----------
@@ -96,8 +98,8 @@ Maintenance
 Improvements
 ------------
 
-* Properly set the ``current_task`` when running ``Batch`` tasks. (`#4 <https://github.com/clokep/celery-batches/pull/4>`_)
-* Call the success signal after a successful run of the ``Batch`` task. (`#6 <https://github.com/clokep/celery-batches/pull/6>`_)
+* Properly set the ``current_task`` when running ``Batches`` tasks. (`#4 <https://github.com/clokep/celery-batches/pull/4>`_)
+* Call the success signal after a successful run of the ``Batches`` task. (`#6 <https://github.com/clokep/celery-batches/pull/6>`_)
 * Support running tasks eagerly via the ``Task.apply()`` method. This causes
   the task to execute with a batch of a single item. Contributed by
   `@scalen <https://github.com/scalen>`_. (`#16 <https://github.com/clokep/celery-batches/pull/16>`_,
@@ -140,7 +142,7 @@ Maintenance
 Improvements
 ------------
 
-* ``Batch`` tasks now call pre- and post-run signals.
+* ``Batches`` tasks now call pre- and post-run signals.
 
 Maintenance
 -----------
