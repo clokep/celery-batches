@@ -38,7 +38,7 @@ logger = get_logger(__name__)
 T = TypeVar("T")
 
 
-def consume_queue(queue: Queue[T]) -> Iterable[T]:
+def consume_queue(queue: "Queue[T]") -> Iterable[T]:
     """Iterator yielding all immediately available items in a
     :class:`Queue.Queue`.
 
