@@ -3,6 +3,7 @@ from queue import Empty, Queue
 
 from celery_batches.trace import apply_batches_task
 
+from celery import VERSION as CELERY_VERSION
 from celery.app.task import Task
 from celery.utils.imports import symbol_by_name
 from celery.utils.log import get_logger
@@ -167,9 +168,13 @@ class Batches(Task):
         eventer = consumer.event_dispatcher
 
         Request = symbol_by_name(task.Request)
-        Req = create_request_cls(
-            Request, task, consumer.pool, hostname, eventer, app=app
-        )
+        # Celery 5.1 added the app argument to create_request_cls.
+        if CELERY_VERSION < (5, 1):
+            Req = create_request_cls(Request, task, consumer.pool, hostname, eventer)
+        else:
+            Req = create_request_cls(
+                Request, task, consumer.pool, hostname, eventer, app=app
+            )
 
         timer = consumer.timer
         put_buffer = self._buffer.put
