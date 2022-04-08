@@ -5,11 +5,16 @@ errors are recorded, handlers are applied and so on.
 
 Mimics some of the functionality found in celery.app.trace.trace_task.
 """
+from typing import TYPE_CHECKING, Any, List, Tuple
+
 from celery import signals, states
 from celery._state import _task_stack
 from celery.app.task import Context
 from celery.utils.log import get_logger
 from kombu.utils.uuid import uuid
+
+if TYPE_CHECKING:
+    from celery_batches import Batches, SimpleRequest
 
 logger = get_logger(__name__)
 
@@ -20,7 +25,9 @@ SUCCESS = states.SUCCESS
 FAILURE = states.FAILURE
 
 
-def apply_batches_task(task, args, loglevel, logfile):
+def apply_batches_task(
+    task: "Batches", args: Tuple[List["SimpleRequest"]], loglevel: int, logfile: None
+) -> Any:
     request_stack = task.request_stack
     push_request = request_stack.push
     pop_request = request_stack.pop
