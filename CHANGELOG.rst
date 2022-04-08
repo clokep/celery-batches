@@ -11,8 +11,11 @@ Improvements
 
 * Support passing multiple or keyword arguments by disabling Celery's ``typing``
   feature for ``Batches`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
-* Support [using a custom ``Request``](https://docs.celeryq.dev/en/stable/userguide/tasks.html)
-  for ``Batches`` tasks. (`#63 <https://github.com/clokep/celery-batches/pull/63>`_)
+* Support |using a custom Request class|_ for ``Batches`` tasks.
+  (`#63 <https://github.com/clokep/celery-batches/pull/63>`_)
+
+.. |using a custom Request class| replace:: using a custom ``Request`` class
+.. using a custom Request class: https://docs.celeryq.dev/en/stable/userguide/tasks.html
 
 Maintenance
 -----------
