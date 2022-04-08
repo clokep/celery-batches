@@ -24,7 +24,7 @@ from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
 from celery.worker.consumer import Consumer
 from celery.worker.request import Request, create_request_cls
-from celery.worker.strategy import proto1_to_proto2
+from celery.worker.strategy import hybrid_to_proto2, proto1_to_proto2
 from kombu.asynchronous.timer import Timer
 from kombu.message import Message
 from kombu.utils.uuid import uuid
@@ -211,15 +211,20 @@ class Batches(Task):
             callbacks: Set,
             **kw: Any,
         ) -> None:
-            if body is None:
+            if body is None and "args" not in message.payload:
                 body, headers, decoded, utc = (
                     message.body,
                     message.headers,
                     False,
-                    True,
+                    app.uses_utc_timezone(),
                 )
             else:
-                body, headers, decoded, utc = proto1_to_proto2(message, body)
+                if "args" in message.payload:
+                    body, headers, decoded, utc = hybrid_to_proto2(
+                        message, message.payload
+                    )
+                else:
+                    body, headers, decoded, utc = proto1_to_proto2(message, body)
 
             request = Req(
                 message,
