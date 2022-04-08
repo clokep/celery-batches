@@ -13,6 +13,9 @@ Improvements
   feature for ``Batches`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
 * Support |using a custom Request class|_ for ``Batches`` tasks.
   (`#63 <https://github.com/clokep/celery-batches/pull/63>`_)
+* Handle "hybrid" messages that have moved between Celery versions. Port
+  `celery/celery#4358 <https://github.com/celery/celery/pull/4358>`_ to celery-batches.
+  (`#64 <https://github.com/clokep/celery-batches/pull/64>`_)
 
 .. |using a custom Request class| replace:: using a custom ``Request`` class
 .. using a custom Request class: https://docs.celeryq.dev/en/stable/userguide/tasks.html
