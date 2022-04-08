@@ -1,13 +1,14 @@
-from itertools import count
+from itertools import count, filterfalse, tee
 from queue import Empty, Queue
 
 from celery_batches.trace import apply_batches_task
 
+from celery import VERSION as CELERY_VERSION
 from celery.app.task import Task
-from celery.utils import noop
+from celery.utils.imports import symbol_by_name
 from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
-from celery.worker.request import Request
+from celery.worker.request import create_request_cls
 from celery.worker.strategy import proto1_to_proto2
 from kombu.utils.uuid import uuid
 
@@ -38,6 +39,12 @@ def consume_queue(queue):
             yield get()
         except Empty:
             break
+
+
+def partition(predicate, iterable):
+    "Use a predicate to partition entries into false entries and true entries"
+    t1, t2 = tee(iterable)
+    return filterfalse(predicate, t1), filter(predicate, t2)
 
 
 class SimpleRequest:
@@ -154,10 +161,21 @@ class Batches(Task):
         # This adds to a buffer at the end, instead of executing the task as
         # the default strategy does.
         self._pool = consumer.pool
+
         hostname = consumer.hostname
-        eventer = consumer.event_dispatcher
-        Req = Request
         connection_errors = consumer.connection_errors
+
+        eventer = consumer.event_dispatcher
+
+        Request = symbol_by_name(task.Request)
+        # Celery 5.1 added the app argument to create_request_cls.
+        if CELERY_VERSION < (5, 1):
+            Req = create_request_cls(Request, task, consumer.pool, hostname, eventer)
+        else:
+            Req = create_request_cls(
+                Request, task, consumer.pool, hostname, eventer, app=app
+            )
+
         timer = consumer.timer
         put_buffer = self._buffer.put
         flush_buffer = self._do_flush
@@ -240,22 +258,22 @@ class Batches(Task):
             self._tref = None
 
     def flush(self, requests):
-        acks_late = [], []
-        [acks_late[r.task.acks_late].append(r) for r in requests]
-        assert requests and (acks_late[True] or acks_late[False])
+        acks_early, acks_late = partition(lambda r: r.task.acks_late, requests)
 
         # Ensure the requests can be serialized using pickle for the prefork pool.
         serializable_requests = ([SimpleRequest.from_request(r) for r in requests],)
 
         def on_accepted(pid, time_accepted):
-            [req.acknowledge() for req in acks_late[False]]
+            for req in acks_early:
+                req.acknowledge()
 
         def on_return(result):
-            [req.acknowledge() for req in acks_late[True]]
+            for req in acks_late:
+                req.acknowledge()
 
         return self._pool.apply_async(
             apply_batches_task,
             (self, serializable_requests, 0, None),
             accept_callback=on_accepted,
-            callback=acks_late[True] and on_return or noop,
+            callback=on_return,
         )

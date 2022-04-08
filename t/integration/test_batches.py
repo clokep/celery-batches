@@ -1,9 +1,12 @@
 from time import sleep
 
+from celery_batches import Batches
+
 from celery import signals
 from celery.app.task import Task
 from celery.contrib.testing.tasks import ping
 from celery.result import allow_join_result
+from celery.worker.request import Request
 
 import pytest
 
@@ -191,5 +194,75 @@ def test_current_task(celery_app, celery_worker):
     counter.assert_calls()
 
 
-# TODO
-# * Test acking
+def test_acks_early(celery_app, celery_worker):
+    """Ensure that acking early works properly."""
+    # Setup a new task and track which Requests are acked.
+    acked = []
+
+    class AckRequest(Request):
+        def acknowledge(self):
+            acked.append(self.id)
+
+    @celery_app.task(
+        base=Batches, flush_every=2, flush_interval=0.1, Request=AckRequest
+    )
+    def acks(requests):
+        # The tasks are acked before running.
+        assert acked == [result_1.id, result_2.id]
+
+    # The task is acking before completion.
+    assert acks.acks_late is False
+
+    # Register the task with the worker.
+    celery_worker.consumer.update_strategies()
+
+    # Call the tasks, they should ack before flush.
+    result_1 = acks.delay()
+    result_2 = acks.delay()
+
+    assert acked == []
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    # The results are stilled acked after running.
+    assert acked == [result_1.id, result_2.id]
+
+
+def test_acks_late(celery_app, celery_worker):
+    """Ensure that acking late works properly."""
+    # Setup a new task and track which Requests are acked.
+    acked = []
+
+    class AckRequest(Request):
+        def acknowledge(self):
+            acked.append(self.id)
+
+    @celery_app.task(
+        base=Batches,
+        acks_late=True,
+        flush_every=2,
+        flush_interval=0.1,
+        Request=AckRequest,
+    )
+    def acks(requests):
+        # When the tasks are running, nothing is acked.
+        assert acked == []
+
+    # The task is acking after completion.
+    assert acks.acks_late is True
+
+    # Register the task with the worker.
+    celery_worker.consumer.update_strategies()
+
+    # Call the tasks, they should ack before flush.
+    result_1 = acks.delay()
+    result_2 = acks.delay()
+
+    assert acked == []
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    # After the tasks are done, both results are acked.
+    assert acked == [result_1.id, result_2.id]

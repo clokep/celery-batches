@@ -1,3 +1,4 @@
 pytest-celery
 pytest~=6.2
 coverage
+pytest-timeout
