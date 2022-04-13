@@ -55,4 +55,8 @@ def retry_if_even(requests):
         else:
             # Even, so modify to be odd next time around and retry
             request.args[0] += 1
-            retry_if_even.apply_async(args=request.args, kwargs=request.kwargs, countdown=3)
+            retry_if_even.apply_async(
+                args=request.args,
+                kwargs=request.kwargs,
+                countdown=3
+            )
