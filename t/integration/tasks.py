@@ -44,6 +44,5 @@ def retry_if_even(requests):
             current_app.backend.mark_as_done(request.id, True, request=request)
         else:
             # Even, so modify to be odd next time around and retry
-            current_app.backend.mark_as_failure(request.id, False)
             request.args[0] += 1
             retry_if_even.apply_async(args=request.args, kwargs=request.kwargs, countdown=3)
