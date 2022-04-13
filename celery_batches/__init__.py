@@ -1,24 +1,45 @@
 from datetime import datetime, timezone
-from itertools import count
+from itertools import count, filterfalse, tee
 from queue import Empty, Queue
-
-from celery.app.task import Task
-from celery.utils import noop
-from celery.utils.log import get_logger
-from celery.utils.nodenames import gethostname
-from celery.worker.request import Request
-from celery.worker.strategy import proto1_to_proto2
-
-from kombu.utils.uuid import uuid
+from typing import (
+    Any,
+    Callable,
+    Collection,
+    Dict,
+    Iterable,
+    NoReturn,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+)
 
 from celery_batches.trace import apply_batches_task
 
-__all__ = ['Batches']
+from celery import VERSION as CELERY_VERSION
+from celery.app import Celery
+from celery.app.task import Task
+from celery.concurrency.base import BasePool
+from celery.utils.imports import symbol_by_name
+from celery.utils.log import get_logger
+from celery.utils.nodenames import gethostname
+from celery.worker.consumer import Consumer
+from celery.worker.request import Request, create_request_cls
+from celery.worker.strategy import hybrid_to_proto2, proto1_to_proto2
+from kombu.asynchronous.timer import Timer
+from kombu.message import Message
+from kombu.utils.uuid import uuid
+from vine import promise
+
+__all__ = ["Batches"]
 
 logger = get_logger(__name__)
 
 
-def consume_queue(queue):
+T = TypeVar("T")
+
+
+def consume_queue(queue: "Queue[T]") -> Iterable[T]:
     """Iterator yielding all immediately available items in a
     :class:`Queue.Queue`.
 
@@ -52,6 +73,14 @@ def consume_queue(queue):
         queue.put_nowait(req)
 
 
+def partition(
+    predicate: Callable[[T], bool], iterable: Iterable[T]
+) -> Tuple[Iterable[T], Iterable[T]]:
+    "Use a predicate to partition entries into false entries and true entries"
+    t1, t2 = tee(iterable)
+    return filterfalse(predicate, t1), filter(predicate, t2)
+
+
 class SimpleRequest:
     """
     A request to execute a task.
@@ -70,10 +99,10 @@ class SimpleRequest:
     name = None
 
     #: positional arguments
-    args = ()
+    args: Tuple[Any, ...] = ()
 
     #: keyword arguments
-    kwargs = {}
+    kwargs: Dict[Any, Any] = {}
 
     #: message delivery information.
     delivery_info = None
@@ -93,7 +122,18 @@ class SimpleRequest:
     #: TODO
     chord = None
 
-    def __init__(self, id, name, args, kwargs, delivery_info, hostname, ignore_result, reply_to, correlation_id):
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        args: Tuple[Any, ...],
+        kwargs: Dict[Any, Any],
+        delivery_info: dict,
+        hostname: str,
+        ignore_result: bool,
+        reply_to: Optional[str],
+        correlation_id: Optional[str],
+    ):
         self.id = id
         self.name = name
         self.args = args
@@ -105,14 +145,22 @@ class SimpleRequest:
         self.correlation_id = correlation_id
 
     @classmethod
-    def from_request(cls, request):
+    def from_request(cls, request: Request) -> "SimpleRequest":
         # Support both protocol v1 and v2.
         args, kwargs, embed = request._payload
         # Celery 5.1.0 added an ignore_result option.
         ignore_result = getattr(request, "ignore_result", False)
-        return cls(request.id, request.name, args,
-                   kwargs, request.delivery_info, request.hostname,
-                   ignore_result, request.reply_to, request.correlation_id)
+        return cls(
+            request.id,
+            request.name,
+            args,
+            kwargs,
+            request.delivery_info,
+            request.hostname,
+            ignore_result,
+            request.reply_to,
+            request.correlation_id,
+        )
 
 
 class Batches(Task):
@@ -132,62 +180,99 @@ class Batches(Task):
     #: Timeout in seconds before buffer is flushed anyway.
     flush_interval = 30
 
-    def __init__(self):
-        self._buffer = Queue()
+    def __init__(self) -> None:
+        self._buffer: Queue[Request] = Queue()
         self._count = count(1)
-        self._tref = None
-        self._pool = None
+        self._tref: Optional[Timer] = None
+        self._pool: BasePool = None
 
-    def run(self, requests):
-        raise NotImplementedError('must implement run(requests)')
+    def run(self, *args: Any, **kwargs: Any) -> NoReturn:
+        raise NotImplementedError("must implement run(requests)")
 
-    def Strategy(self, task, app, consumer):
+    def Strategy(self, task: "Batches", app: Celery, consumer: Consumer) -> Callable:
         # See celery.worker.strategy.default for inspiration.
         #
         # This adds to a buffer at the end, instead of executing the task as
         # the default strategy does.
         self._pool = consumer.pool
+
         hostname = consumer.hostname
-        eventer = consumer.event_dispatcher
-        Req = Request
         connection_errors = consumer.connection_errors
+
+        eventer = consumer.event_dispatcher
+
+        Request = symbol_by_name(task.Request)
+        # Celery 5.1 added the app argument to create_request_cls.
+        if CELERY_VERSION < (5, 1):
+            Req = create_request_cls(Request, task, consumer.pool, hostname, eventer)
+        else:
+            Req = create_request_cls(
+                Request, task, consumer.pool, hostname, eventer, app=app
+            )
+
         timer = consumer.timer
         put_buffer = self._buffer.put
         flush_buffer = self._do_flush
 
-        def task_message_handler(message, body, ack, reject, callbacks, **kw):
-            if body is None:
+        def task_message_handler(
+            message: Message,
+            body: Optional[Dict[str, Any]],
+            ack: promise,
+            reject: promise,
+            callbacks: Set,
+            **kw: Any,
+        ) -> None:
+            if body is None and "args" not in message.payload:
                 body, headers, decoded, utc = (
-                    message.body, message.headers, False, True,
+                    message.body,
+                    message.headers,
+                    False,
+                    app.uses_utc_timezone(),
                 )
             else:
-                body, headers, decoded, utc = proto1_to_proto2(message, body)
+                if "args" in message.payload:
+                    body, headers, decoded, utc = hybrid_to_proto2(
+                        message, message.payload
+                    )
+                else:
+                    body, headers, decoded, utc = proto1_to_proto2(message, body)
 
             request = Req(
                 message,
-                on_ack=ack, on_reject=reject, app=app, hostname=hostname,
-                eventer=eventer, task=task,
-                body=body, headers=headers, decoded=decoded, utc=utc,
+                on_ack=ack,
+                on_reject=reject,
+                app=app,
+                hostname=hostname,
+                eventer=eventer,
+                task=task,
+                body=body,
+                headers=headers,
+                decoded=decoded,
+                utc=utc,
                 connection_errors=connection_errors,
             )
             put_buffer(request)
 
-            if self._tref is None:     # first request starts flush timer.
-                self._tref = timer.call_repeatedly(
-                    self.flush_interval, flush_buffer,
-                )
+            if self._tref is None:  # first request starts flush timer.
+                self._tref = timer.call_repeatedly(self.flush_interval, flush_buffer)
 
             if not next(self._count) % self.flush_every:
                 flush_buffer()
 
         return task_message_handler
 
-    def apply(self, args=None, kwargs=None, *_args, **options):
+    def apply(
+        self,
+        args: Optional[Tuple[Any, ...]] = None,
+        kwargs: Optional[dict] = None,
+        *_args: Any,
+        **options: Any,
+    ) -> Any:
         """
-        Execute this task locally as a batch of size 1, by blocking until the task returns.
+        Execute the task synchronously as a batch of size 1.
 
         Arguments:
-            args (Tuple): positional arguments passed on to the task.
+            args: positional arguments passed on to the task.
         Returns:
             celery.result.EagerResult: pre-evaluated result.
         """
@@ -197,10 +282,10 @@ class Batches(Task):
             args=args or (),
             kwargs=kwargs or {},
             delivery_info={
-                'is_eager': True,
-                'exchange': options.get('exchange'),
-                'routing_key': options.get('routing_key'),
-                'priority': options.get('priority'),
+                "is_eager": True,
+                "exchange": options.get("exchange"),
+                "routing_key": options.get("routing_key"),
+                "priority": options.get("priority"),
             },
             hostname=gethostname(),
             ignore_result=options.get("ignore_result", False),
@@ -210,37 +295,37 @@ class Batches(Task):
 
         return super().apply(([request],), {}, *_args, **options)
 
-    def _do_flush(self):
-        logger.debug('Batches: Wake-up to flush buffer...')
+    def _do_flush(self) -> None:
+        logger.debug("Batches: Wake-up to flush buffer...")
         requests = None
         if self._buffer.qsize():
             requests = list(consume_queue(self._buffer))
             if requests:
-                logger.debug('Batches: Buffer complete: %s', len(requests))
+                logger.debug("Batches: Buffer complete: %s", len(requests))
                 self.flush(requests)
         if not requests and self._buffer.qsize() == 0:
-            logger.debug('Batches: Canceling timer: Nothing in buffer.')
+            logger.debug("Batches: Canceling timer: Nothing in buffer.")
             if self._tref:
                 self._tref.cancel()  # cancel timer.
             self._tref = None
 
-    def flush(self, requests):
-        acks_late = [], []
-        [acks_late[r.task.acks_late].append(r) for r in requests]
-        assert requests and (acks_late[True] or acks_late[False])
+    def flush(self, requests: Collection[Request]) -> Any:
+        acks_early, acks_late = partition(lambda r: bool(r.task.acks_late), requests)
 
         # Ensure the requests can be serialized using pickle for the prefork pool.
         serializable_requests = ([SimpleRequest.from_request(r) for r in requests],)
 
-        def on_accepted(pid, time_accepted):
-            [req.acknowledge() for req in acks_late[False]]
+        def on_accepted(pid: int, time_accepted: float) -> None:
+            for req in acks_early:
+                req.acknowledge()
 
-        def on_return(result):
-            [req.acknowledge() for req in acks_late[True]]
+        def on_return(result: Optional[Any]) -> None:
+            for req in acks_late:
+                req.acknowledge()
 
         return self._pool.apply_async(
             apply_batches_task,
             (self, serializable_requests, 0, None),
             accept_callback=on_accepted,
-            callback=acks_late[True] and on_return or noop,
+            callback=on_return,
         )

@@ -10,14 +10,30 @@ Improvements
 ------------
 
 * Support passing multiple or keyword arguments by disabling Celery's ``typing``
-  feature for ``Batch`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
+  feature for ``Batches`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
+* Support |using a custom Request class|_ for ``Batches`` tasks.
+  (`#63 <https://github.com/clokep/celery-batches/pull/63>`_)
+
+Bugfixes
+--------
+
+* Handle "hybrid" messages that have moved between Celery versions. Port
+  `celery/celery#4358 <https://github.com/celery/celery/pull/4358>`_ to celery-batches.
+  (`#64 <https://github.com/clokep/celery-batches/pull/64>`_)
+* Fix task ETA issues when timezone is defined in configuration. Port
+  `celery/celery#3867 <https://github.com/celery/celery/pull/3867>`_ to celery-batches.
+  (`#64 <https://github.com/clokep/celery-batches/pull/64>`_)
+
+.. |using a custom Request class| replace:: using a custom ``Request`` class
+.. using a custom Request class: https://docs.celeryq.dev/en/stable/userguide/tasks.html
 
 Maintenance
 -----------
 
 * Fix running of tests via tox. (`#40 <https://github.com/clokep/celery-batches/pull/40>`_,
   `#58 <https://github.com/clokep/celery-batches/pull/58>`_)
-* Simplify tests. (`#56 <https://github.com/clokep/celery-batches/pull/56>`_)
+* Simplify tests. (`#56 <https://github.com/clokep/celery-batches/pull/56>`_,
+  `#60 <https://github.com/clokep/celery-batches/pull/60>`_)
 * Improve PyPI metadata. (`#43 <https://github.com/clokep/celery-batches/pull/43>`_,
   `#52 <https://github.com/clokep/celery-batches/pull/52>`_)
 * Ignore virtualenvs in `.gitignore`. Contributed by `Tony Narlock <https://github.com/tony>`_.
@@ -32,6 +48,13 @@ Maintenance
   `#49 <https://github.com/clokep/celery-batches/pull/49>`_,
   `#50 <https://github.com/clokep/celery-batches/pull/50>`_,
   `#55 <https://github.com/clokep/celery-batches/pull/55>`_)
+* Run the unit tests against RabbitMQ & Redis brokers/backends.
+  (`#57 <https://github.com/clokep/celery-batches/pull/57>`_)
+* Run `black <https://black.readthedocs.io/>`_, `isort <https://pycqa.github.io/isort/>`_,
+  `flake8 <https://flake8.pycqa.org>`_, `pyupgrade <https://github.com/asottile/pyupgrade>`_,
+  and ``mypy <https://mypy.readthedocs.io>`_.
+  (`#61 <https://github.com/clokep/celery-batches/pull/61/>`_,
+  `#62 <https://github.com/clokep/celery-batches/pull/62>`_)
 
 
 0.6 (2021-12-30)
@@ -88,8 +111,8 @@ Maintenance
 Improvements
 ------------
 
-* Properly set the ``current_task`` when running ``Batch`` tasks. (`#4 <https://github.com/clokep/celery-batches/pull/4>`_)
-* Call the success signal after a successful run of the ``Batch`` task. (`#6 <https://github.com/clokep/celery-batches/pull/6>`_)
+* Properly set the ``current_task`` when running ``Batches`` tasks. (`#4 <https://github.com/clokep/celery-batches/pull/4>`_)
+* Call the success signal after a successful run of the ``Batches`` task. (`#6 <https://github.com/clokep/celery-batches/pull/6>`_)
 * Support running tasks eagerly via the ``Task.apply()`` method. This causes
   the task to execute with a batch of a single item. Contributed by
   `@scalen <https://github.com/scalen>`_. (`#16 <https://github.com/clokep/celery-batches/pull/16>`_,
@@ -132,7 +155,7 @@ Maintenance
 Improvements
 ------------
 
-* ``Batch`` tasks now call pre- and post-run signals.
+* ``Batches`` tasks now call pre- and post-run signals.
 
 Maintenance
 -----------
