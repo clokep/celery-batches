@@ -1,9 +1,14 @@
 from time import sleep
+from typing import Any, Callable, List, Optional, Union
 
-from celery import signals
+from celery_batches import Batches, SimpleRequest
+
+from celery import Celery, signals
 from celery.app.task import Task
-from celery.result import allow_join_result
 from celery.contrib.testing.tasks import ping
+from celery.contrib.testing.worker import TestWorkController
+from celery.result import allow_join_result
+from celery.worker.request import Request
 
 import pytest
 
@@ -11,19 +16,21 @@ from .tasks import add, cumadd, retry_if_even
 
 
 class SignalCounter:
-    def __init__(self, expected_calls, callback=None):
+    def __init__(
+        self, expected_calls: int, callback: Optional[Callable[..., None]] = None
+    ):
         self.calls = 0
         self.expected_calls = expected_calls
         self.callback = callback
 
-    def __call__(self, sender, **kwargs):
+    def __call__(self, sender: Union[Task, str], **kwargs: Any) -> None:
         if isinstance(sender, Task):
             sender_name = sender.name
         else:
             sender_name = sender
 
         # Ignore pings, those are used to ensure the worker processes tasks.
-        if sender_name == 'celery.ping':
+        if sender_name == "celery.ping":
             return
 
         self.calls += 1
@@ -32,22 +39,22 @@ class SignalCounter:
         if self.callback:
             self.callback(sender, **kwargs)
 
-    def assert_calls(self):
+    def assert_calls(self) -> None:
         assert self.calls == self.expected_calls
 
 
-def _wait_for_ping(ping_task_timeout=10.0):
+def _wait_for_ping(ping_task_timeout: float = 10.0) -> None:
     """
     Wait for the celery worker to respond to a ping.
 
     This should ensure that any other running tasks are done.
     """
     with allow_join_result():
-        assert ping.delay().get(timeout=ping_task_timeout) == 'pong'
+        assert ping.delay().get(timeout=ping_task_timeout) == "pong"
 
 
-@pytest.mark.usefixtures('depends_on_current_app')
-def test_always_eager(celery_app):
+@pytest.mark.usefixtures("depends_on_current_app")
+def test_always_eager(celery_app: Celery) -> None:
     """The batch task runs immediately, in the same thread."""
     celery_app.conf.task_always_eager = True
     result = add.delay(1)
@@ -56,20 +63,24 @@ def test_always_eager(celery_app):
     assert result.get() == 1
 
 
-def test_apply():
+def test_apply() -> None:
     """The batch task runs immediately, in the same thread."""
-    result = add.apply(args=(1, ))
+    result = add.apply(args=(1,))
 
     # An EagerResult that resolve to 1 should be returned.
     assert result.get() == 1
 
 
-def test_flush_interval(celery_worker):
+def test_flush_interval(celery_app: Celery, celery_worker: TestWorkController) -> None:
     """The batch task runs after the flush interval has elapsed."""
+
+    if not celery_app.conf.broker_url.startswith("memory"):
+        raise pytest.skip("Flaky on live brokers")
+
     result = add.delay(1)
 
-    # The flush interval is 1 second, this is longer.
-    sleep(2)
+    # The flush interval is 0.1 second, this is longer.
+    sleep(0.2)
 
     # Let the worker work.
     _wait_for_ping()
@@ -77,7 +88,7 @@ def test_flush_interval(celery_worker):
     assert result.get() == 1
 
 
-def test_flush_calls(celery_worker):
+def test_flush_calls(celery_worker: TestWorkController) -> None:
     """The batch task runs after two calls."""
     result_1 = add.delay(1)
     result_2 = add.delay(3)
@@ -89,7 +100,7 @@ def test_flush_calls(celery_worker):
     assert result_2.get() == 4
 
 
-def test_multi_arg(celery_worker):
+def test_multi_arg(celery_worker: TestWorkController) -> None:
     """The batch task runs after two calls."""
     result_1 = add.delay(1, 2)
     result_2 = add.delay(3, 4)
@@ -101,7 +112,7 @@ def test_multi_arg(celery_worker):
     assert result_2.get() == 10
 
 
-def test_kwarg(celery_worker):
+def test_kwarg(celery_worker: TestWorkController) -> None:
     """The batch task runs after two calls."""
     result_1 = add.delay(a=1, b=2)
     result_2 = add.delay(a=3, b=4)
@@ -113,7 +124,7 @@ def test_kwarg(celery_worker):
     assert result_2.get() == 10
 
 
-def test_result(celery_worker):
+def test_result(celery_worker: TestWorkController) -> None:
     """Each task call can return a result."""
     result_1 = cumadd.delay(1)
     result_2 = cumadd.delay(2)
@@ -125,7 +136,7 @@ def test_result(celery_worker):
     assert result_2.get(timeout=3) == 3
 
 
-def test_signals(celery_app, celery_worker):
+def test_signals(celery_app: Celery, celery_worker: TestWorkController) -> None:
     """Ensure that Celery signals run for the batch task."""
     # Configure a SignalCounter for each task signal.
     checks = (
@@ -164,10 +175,11 @@ def test_signals(celery_app, celery_worker):
         counter.assert_calls()
 
 
-def test_current_task(celery_app, celery_worker):
+def test_current_task(celery_app: Celery, celery_worker: TestWorkController) -> None:
     """Ensure the current_task is properly set when running the task."""
-    def signal(sender, **kwargs):
-        assert celery_app.current_task.name == 't.integration.tasks.add'
+
+    def signal(sender: Union[Task, str], **kwargs: Any) -> None:
+        assert celery_app.current_task.name == "t.integration.tasks.add"
 
     counter = SignalCounter(1, signal)
     signals.task_prerun.connect(counter)
@@ -186,7 +198,81 @@ def test_current_task(celery_app, celery_worker):
     counter.assert_calls()
 
 
-def test_retry(celery_app, celery_worker):
+def test_acks_early(celery_app: Celery, celery_worker: TestWorkController) -> None:
+    """Ensure that acking early works properly."""
+    # Setup a new task and track which Requests are acked.
+    acked = []
+
+    class AckRequest(Request):
+        def acknowledge(self) -> None:
+            acked.append(self.id)
+
+    @celery_app.task(
+        base=Batches, flush_every=2, flush_interval=0.1, Request=AckRequest
+    )
+    def acks(requests: List[SimpleRequest]) -> None:
+        # The tasks are acked before running.
+        assert acked == [result_1.id, result_2.id]
+
+    # The task is acking before completion.
+    assert acks.acks_late is False
+
+    # Register the task with the worker.
+    celery_worker.consumer.update_strategies()
+
+    # Call the tasks, they should ack before flush.
+    result_1 = acks.delay()
+    result_2 = acks.delay()
+
+    assert acked == []
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    # The results are stilled acked after running.
+    assert acked == [result_1.id, result_2.id]
+
+
+def test_acks_late(celery_app: Celery, celery_worker: TestWorkController) -> None:
+    """Ensure that acking late works properly."""
+    # Setup a new task and track which Requests are acked.
+    acked = []
+
+    class AckRequest(Request):
+        def acknowledge(self) -> None:
+            acked.append(self.id)
+
+    @celery_app.task(
+        base=Batches,
+        acks_late=True,
+        flush_every=2,
+        flush_interval=0.1,
+        Request=AckRequest,
+    )
+    def acks(requests: List[SimpleRequest]) -> None:
+        # When the tasks are running, nothing is acked.
+        assert acked == []
+
+    # The task is acking after completion.
+    assert acks.acks_late is True
+
+    # Register the task with the worker.
+    celery_worker.consumer.update_strategies()
+
+    # Call the tasks, they should ack before flush.
+    result_1 = acks.delay()
+    result_2 = acks.delay()
+
+    assert acked == []
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    # After the tasks are done, both results are acked.
+    assert acked == [result_1.id, result_2.id]
+
+
+def test_retry(celery_app: Celery, celery_worker: TestWorkController) -> None:
     """The batch task fails on the first call, is retried and succeeds."""
     def signal(sender, **kwargs):
         assert celery_app.current_task.name == 't.integration.tasks.retry_if_even'
@@ -209,6 +295,3 @@ def test_retry(celery_app, celery_worker):
     # The retried task is not accessible here for validation.
 
     counter.assert_calls()
-
-# TODO
-# * Test acking
