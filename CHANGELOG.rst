@@ -25,7 +25,7 @@ Bugfixes
   (`#64 <https://github.com/clokep/celery-batches/pull/64>`_)
 
 .. |using a custom Request class| replace:: using a custom ``Request`` class
-.. using a custom Request class: https://docs.celeryq.dev/en/stable/userguide/tasks.html
+.. _using a custom Request class: https://docs.celeryq.dev/en/stable/userguide/tasks.html#requests-and-custom-requests
 
 Maintenance
 -----------
@@ -52,7 +52,7 @@ Maintenance
   (`#57 <https://github.com/clokep/celery-batches/pull/57>`_)
 * Run `black <https://black.readthedocs.io/>`_, `isort <https://pycqa.github.io/isort/>`_,
   `flake8 <https://flake8.pycqa.org>`_, `pyupgrade <https://github.com/asottile/pyupgrade>`_,
-  and ``mypy <https://mypy.readthedocs.io>`_.
+  and `mypy <https://mypy.readthedocs.io>`_.
   (`#61 <https://github.com/clokep/celery-batches/pull/61/>`_,
   `#62 <https://github.com/clokep/celery-batches/pull/62>`_)
 
