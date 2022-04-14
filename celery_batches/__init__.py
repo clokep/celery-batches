@@ -56,21 +56,11 @@ def consume_queue(queue: "Queue[T]") -> Iterable[T]:
 
     """
     get = queue.get_nowait
-    requests_to_requeue = []
     while 1:
         try:
-            req = get()
-            if req.eta is not None:
-                if req.eta <= datetime.now(timezone.utc):
-                    yield req
-                else:
-                    requests_to_requeue.append(req)
-            else:
-                yield req
+            yield get()
         except Empty:
             break
-    for req in requests_to_requeue:
-        queue.put_nowait(req)
 
 
 def partition(
@@ -182,6 +172,7 @@ class Batches(Task):
 
     def __init__(self) -> None:
         self._buffer: Queue[Request] = Queue()
+        self._pending: Queue[Request] = Queue()
         self._count = count(1)
         self._tref: Optional[Timer] = None
         self._pool: BasePool = None
@@ -296,15 +287,34 @@ class Batches(Task):
         return super().apply(([request],), {}, *_args, **options)
 
     def _do_flush(self) -> None:
-        logger.debug("Batches: Wake-up to flush buffer...")
-        requests = None
-        if self._buffer.qsize():
-            requests = list(consume_queue(self._buffer))
-            if requests:
-                logger.debug("Batches: Buffer complete: %s", len(requests))
-                self.flush(requests)
-        if not requests and self._buffer.qsize() == 0:
-            logger.debug("Batches: Canceling timer: Nothing in buffer.")
+        logger.debug("Batches: Wake-up to flush buffers...")
+
+        ready_requests = []
+        pending_requests = []
+
+        all_requests = list(consume_queue(self._buffer)) + list(consume_queue(self._pending))
+        for req in all_requests:
+            if req.eta is not None:
+                if req.eta <= datetime.now(timezone.utc):
+                    # ETA has elapsed, request is ready
+                    ready_requests.append(req)
+                else:
+                    # ETA has not elapsed, add to pending queue
+                    pending_requests.append(req)
+            else:
+                # Request does not have an ETA, ready immediately
+                ready_requests.append(req)
+
+        if len(ready_requests) > 0:
+            logger.debug("Batches: Ready buffer complete: %s", len(ready_requests))
+            self.flush(ready_requests)
+
+        # Put all pending requests into the pending queue
+        for req in pending_requests:
+            self._pending.put(req)
+
+        if self._buffer.qsize() == 0 and self._pending.qsize() == 0:
+            logger.debug("Batches: Canceling timer: Nothing in buffers.")
             if self._tref:
                 self._tref.cancel()  # cancel timer.
             self._tref = None
