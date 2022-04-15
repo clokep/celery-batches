@@ -48,6 +48,7 @@ Maintenance
   `#49 <https://github.com/clokep/celery-batches/pull/49>`_,
   `#50 <https://github.com/clokep/celery-batches/pull/50>`_,
   `#55 <https://github.com/clokep/celery-batches/pull/55>`_)
+* Document use-cases and include more examples. (`#65 <https://github.com/clokep/celery-batches/pull/65>`_)
 * Run the unit tests against RabbitMQ & Redis brokers/backends.
   (`#57 <https://github.com/clokep/celery-batches/pull/57>`_)
 * Run `black <https://black.readthedocs.io/>`_, `isort <https://pycqa.github.io/isort/>`_,
