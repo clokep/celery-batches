@@ -20,6 +20,23 @@ Then you can ask for a click to be counted by doing::
 
     >>> count_click.delay(url='http://example.com')
 
+Database example
+################
+
+It can be useful to batch together tasks to reduce database updates (in situations
+where a missed update is not important), e.g. updating the last seen time of a user:
+
+.. literalinclude:: examples/last_seen.py
+    :language: python
+
+Bulk inserting/updating data
+############################
+
+It can also be useful to just bulk insert data as quickly as possible, but when the discrete data is from separate tasks.
+
+.. literalinclude:: examples/bulk_insert.py
+    :language: python
+
 Example returning results
 #########################
 
