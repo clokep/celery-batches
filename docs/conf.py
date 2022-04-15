@@ -3,11 +3,13 @@ import sys
 from importlib import metadata
 
 sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("./_ext"))
 
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx_celery.setting_crossref",
+    "celerydocs",
 ]
 
 templates_path = ["_templates"]
@@ -68,8 +70,8 @@ texinfo_documents = [
     ),
 ]
 
-INTERSPHINX_MAPPING = {
-    "python": ("http://docs.python.org/dev/", None),
-    "kombu": ("http://kombu.readthedocs.io/en/master/", None),
-    "celery": ("http://docs.celeryproject.org/en/master", None),
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/dev/", None),
+    "kombu": ("https://docs.celeryq.dev/projects/kombu/en/master/", None),
+    "celery": ("https://docs.celeryq.dev/en/master/", None),
 }
