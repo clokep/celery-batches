@@ -1,6 +1,6 @@
-from celery import Celery
-
 from celery_batches import Batches
+
+from celery import Celery
 
 from my_app import User
 

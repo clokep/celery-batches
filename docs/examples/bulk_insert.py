@@ -1,10 +1,11 @@
-from celery import Celery
-
 from celery_batches import Batches
+
+from celery import Celery
 
 from my_app import MyModel
 
 app = Celery("bulk_insert")
+
 
 @app.task(base=Batches, flush_every=100, flush_interval=10)
 def bulk_insert(requests):
