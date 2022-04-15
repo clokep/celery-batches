@@ -38,9 +38,28 @@ jobs:
       - name: "Run mypy"
         run: mypy
 
+  docs:
+    name: "Build Documentation"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: "actions/setup-python@v3"
+        with:
+          python-version: "3.7"
+
+      - name: "Install dependencies"
+        run: python -m pip install -r requirements/docs.txt
+
+      - name: "Run Sphinx"
+        run: sphinx-build -W --keep-going -b html docs _build
+
   tests:
     name: "Python ${{ matrix.python-version }}"
-    needs: lint
+    needs:
+      - lint
+      - docs
     runs-on: ubuntu-latest
 
     strategy:
