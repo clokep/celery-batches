@@ -15,6 +15,13 @@ Celery Batches provides a ``Task`` class that allows processing of multiple
 Celery task calls together as a list. The buffer of tasks calls is flushed on a
 timer and based on the number of queued tasks.
 
+Some potential use-cases for batching of task calls include:
+
+* De-duplicating tasks.
+* Accumlating / only handling the latest task with similar arguments.
+* Bulk inserting / updating of data.
+* Tasks with expensive setup that can run across a range of arguments.
+
 What do I need?
 ===============
 

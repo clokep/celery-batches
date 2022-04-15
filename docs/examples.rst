@@ -64,11 +64,3 @@ messages, and every 10 seconds.
 Using the API is done as follows::
 
     >>> wot_api.delay('http://example.com')
-
-.. note::
-
-    If you don't have an ``app`` instance then use the current app proxy
-    instead::
-
-        from celery import current_app
-        current_app.backend.mark_as_done(request.id, response, request=request)
