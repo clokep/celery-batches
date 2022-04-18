@@ -274,8 +274,9 @@ def test_acks_late(celery_app: Celery, celery_worker: TestWorkController) -> Non
 
 def test_retry(celery_app: Celery, celery_worker: TestWorkController) -> None:
     """The batch task fails on the first call, is retried and succeeds."""
-    def signal(sender, **kwargs):
-        assert celery_app.current_task.name == 't.integration.tasks.retry_if_even'
+
+    def signal(sender: Union[Task, str], **kwargs: Any) -> None:
+        assert celery_app.current_task.name == "t.integration.tasks.retry_if_even"
 
     # One success, one failure and successful retry
     counter = SignalCounter(2, signal)

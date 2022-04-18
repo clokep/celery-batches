@@ -292,8 +292,9 @@ class Batches(Task):
         ready_requests = []
         pending_requests = []
 
-        all_requests = list(consume_queue(self._buffer)) \
-            + list(consume_queue(self._pending))
+        all_requests = list(consume_queue(self._buffer)) + list(
+            consume_queue(self._pending)
+        )
         for req in all_requests:
             if req.eta is not None:
                 if req.eta <= datetime.now(timezone.utc):
