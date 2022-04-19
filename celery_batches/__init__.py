@@ -290,7 +290,6 @@ class Batches(Task):
         logger.debug("Batches: Wake-up to flush buffers...")
 
         ready_requests = []
-        pending_requests = []
 
         all_requests = list(consume_queue(self._buffer)) + list(
             consume_queue(self._pending)
@@ -302,7 +301,7 @@ class Batches(Task):
                     ready_requests.append(req)
                 else:
                     # ETA has not elapsed, add to pending queue
-                    pending_requests.append(req)
+                    self._pending.put(req)
             else:
                 # Request does not have an ETA, ready immediately
                 ready_requests.append(req)
@@ -311,11 +310,7 @@ class Batches(Task):
             logger.debug("Batches: Ready buffer complete: %s", len(ready_requests))
             self.flush(ready_requests)
 
-        # Put all pending requests into the pending queue
-        for req in pending_requests:
-            self._pending.put(req)
-
-        if self._buffer.qsize() == 0 and self._pending.qsize() == 0:
+        if not ready_requests and self._pending.qsize() == 0:
             logger.debug("Batches: Canceling timer: Nothing in buffers.")
             if self._tref:
                 self._tref.cancel()  # cancel timer.

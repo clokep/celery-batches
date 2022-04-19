@@ -285,9 +285,9 @@ def test_retry(celery_app: Celery, celery_worker: TestWorkController) -> None:
     result_1 = retry_if_even.delay(1)
     retry_if_even.delay(2)
 
-    # The flush interval is 1 second and the retry interval is 3 seconds,
+    # The flush interval is 0.1 second and the retry interval is 0.5 second,
     # this is longer.
-    sleep(10)
+    sleep(1)
 
     # Let the worker work.
     _wait_for_ping()
