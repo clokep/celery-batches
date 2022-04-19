@@ -96,7 +96,7 @@ Using the API is done as follows::
 .. note::
 
     The use of ``current_app.backend.mark_as_retry()`` and ``current_app.backend.mark_as_failure()`` are not currently supported.
-    If task retry on failure is required, the following workaround may be suitable:
+    If task retry on failure is required, the following workaround may be suitable::
 
         @app.task(base=Batches, flush_every=100, flush_interval=10)
         def wot_api(requests):
