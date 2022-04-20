@@ -275,6 +275,9 @@ def test_acks_late(celery_app: Celery, celery_worker: TestWorkController) -> Non
 def test_retry(celery_app: Celery, celery_worker: TestWorkController) -> None:
     """The batch task fails on the first call, is retried and succeeds."""
 
+    if not celery_app.conf.broker_url.startswith("memory"):
+        raise pytest.skip("Flaky on live brokers")
+
     def signal(sender: Union[Task, str], **kwargs: Any) -> None:
         assert celery_app.current_task.name == "t.integration.tasks.retry_if_even"
 
@@ -289,7 +292,7 @@ def test_retry(celery_app: Celery, celery_worker: TestWorkController) -> None:
 
     # The flush interval is 0.1 seconds and the retry interval is 0.5 seconds,
     # this is longer.
-    sleep(2)
+    sleep(1)
 
     # Let the worker work.
     _wait_for_ping()
