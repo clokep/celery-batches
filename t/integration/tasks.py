@@ -55,5 +55,8 @@ def retry_if_even(requests: List[SimpleRequest]) -> None:
         else:
             # Even, so retry with an odd argument
             retry_if_even.apply_async(
-                args=(request.args[0] + 1,), kwargs=request.kwargs, countdown=0.5
+                args=(request.args[0] + 1,),
+                kwargs=request.kwargs,
+                countdown=0.5,
+                task_id=request.id,
             )

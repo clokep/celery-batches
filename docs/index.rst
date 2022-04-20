@@ -95,8 +95,8 @@ Using the API is done as follows::
 
 .. note::
 
-    The use of ``current_app.backend.mark_as_retry()`` and ``current_app.backend.mark_as_failure()`` are not currently supported.
-    If task retry on failure is required, the following workaround may be suitable::
+    In order to retry a failed task, the task must be re-executed with a matching ``task_id``,
+    as shown below::
 
         @app.task(base=Batches, flush_every=100, flush_interval=10)
         def wot_api(requests):
@@ -107,8 +107,13 @@ Using the API is done as follows::
                 if response is True:
                     app.backend.mark_as_done(request.id, response, request=request)
                 else:
-                    # Retry a new task with the same arguments 10 seconds from now
-                    wot_api.apply_async(args=request.args, kwargs=request.kwargs, countdown=10)
+                    # Retry the task with the same arguments and task_id, 10 seconds from now
+                    wot_api.apply_async(
+                        args=request.args,
+                        kwargs=request.kwargs,
+                        countdown=10,
+                        task_id=request.id,
+                    )
 
 .. toctree::
    :hidden:

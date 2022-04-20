@@ -283,17 +283,18 @@ def test_retry(celery_app: Celery, celery_worker: TestWorkController) -> None:
     signals.task_success.connect(counter)
 
     result_1 = retry_if_even.delay(1)
-    retry_if_even.delay(2)
+
+    # Should fail, retry and eventually be successful
+    result_2 = retry_if_even.delay(2)
 
     # The flush interval is 0.1 seconds and the retry interval is 0.5 seconds,
     # this is longer.
-    sleep(1)
+    sleep(2)
 
     # Let the worker work.
     _wait_for_ping()
 
     assert result_1.get() is True
-
-    # The retried task is not accessible here for validation.
+    assert result_2.get() is True
 
     counter.assert_calls()
