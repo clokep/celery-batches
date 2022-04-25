@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
 from time import sleep
 from typing import Any, Callable, List, Optional, Union
 
 from celery_batches import Batches, SimpleRequest
 
-from celery import Celery, signals
+from celery import Celery, signals, states
 from celery.app.task import Task
 from celery.contrib.testing.tasks import ping
 from celery.contrib.testing.worker import TestWorkController
@@ -12,7 +13,7 @@ from celery.worker.request import Request
 
 import pytest
 
-from .tasks import add, cumadd, retry_if_even
+from .tasks import add, cumadd
 
 
 class SignalCounter:
@@ -272,23 +273,20 @@ def test_acks_late(celery_app: Celery, celery_worker: TestWorkController) -> Non
     assert acked == [result_1.id, result_2.id]
 
 
-def test_retry(celery_app: Celery, celery_worker: TestWorkController) -> None:
-    """The batch task fails on the first call, is retried and succeeds."""
+def test_countdown(celery_app: Celery, celery_worker: TestWorkController) -> None:
+    """Ensure that countdowns work properly.
+
+    The batch task handles only the first request initially (as the second request
+    is not ready). A subsequent call handles the second request.
+    """
 
     if not celery_app.conf.broker_url.startswith("memory"):
         raise pytest.skip("Flaky on live brokers")
 
-    def signal(sender: Union[Task, str], **kwargs: Any) -> None:
-        assert celery_app.current_task.name == "t.integration.tasks.retry_if_even"
-
-    # One success, one failure and successful retry
-    counter = SignalCounter(2, signal)
-    signals.task_success.connect(counter)
-
-    result_1 = retry_if_even.delay(1)
-
-    # Should fail, retry and eventually be successful
-    result_2 = retry_if_even.delay(2)
+    result_1 = add.apply_async(args=(1,))
+    # The countdown is longer than the flush interval + first sleep, but shorter
+    # than the flush interval + first sleep + second sleep.
+    result_2 = add.apply_async(args=(2,), countdown=3)
 
     # The flush interval is 0.1 seconds and the retry interval is 0.5 seconds,
     # this is longer.
@@ -297,7 +295,35 @@ def test_retry(celery_app: Celery, celery_worker: TestWorkController) -> None:
     # Let the worker work.
     _wait_for_ping()
 
-    assert result_1.get() is True
-    assert result_2.get() is True
+    assert result_1.get() == 1
+    assert result_2.state == states.PENDING
 
-    counter.assert_calls()
+    sleep(3)
+
+    assert result_2.get() == 2
+
+
+def test_eta(celery_app: Celery, celery_worker: TestWorkController) -> None:
+    """Ensure that ETAs work properly."""
+
+    if not celery_app.conf.broker_url.startswith("memory"):
+        raise pytest.skip("Flaky on live brokers")
+
+    result_1 = add.apply_async(args=(1,))
+    # The countdown is longer than the flush interval + first sleep, but shorter
+    # than the flush interval + first sleep + second sleep.
+    result_2 = add.apply_async(args=(2,), eta=datetime.utcnow() + timedelta(seconds=3))
+
+    # The flush interval is 0.1 seconds and the retry interval is 0.5 seconds,
+    # this is longer.
+    sleep(1)
+
+    # Let the worker work.
+    _wait_for_ping()
+
+    assert result_1.get() == 1
+    assert result_2.state == states.PENDING
+
+    sleep(3)
+
+    assert result_2.get() == 2

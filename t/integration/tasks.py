@@ -41,22 +41,3 @@ def cumadd(requests: List[SimpleRequest]) -> None:
     for request in requests:
         result += request.args[0]
         current_app.backend.mark_as_done(request.id, result, request=request)
-
-
-@shared_task(base=Batches, flush_every=2, flush_interval=0.1)
-def retry_if_even(requests: List[SimpleRequest]) -> None:
-    """Retry the task if the first argument of a request is even."""
-    from celery import current_app
-
-    for request in requests:
-        if request.args[0] % 2 == 1:
-            # Odd, success
-            current_app.backend.mark_as_done(request.id, True, request=request)
-        else:
-            # Even, so retry with an odd argument
-            retry_if_even.apply_async(
-                args=(request.args[0] + 1,),
-                kwargs=request.kwargs,
-                countdown=0.5,
-                task_id=request.id,
-            )
