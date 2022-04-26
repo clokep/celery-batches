@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
 from itertools import count, filterfalse, tee
 from queue import Empty, Queue
+from time import monotonic
 from typing import (
     Any,
     Callable,
@@ -23,10 +23,11 @@ from celery.concurrency.base import BasePool
 from celery.utils.imports import symbol_by_name
 from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
+from celery.utils.time import timezone
 from celery.worker.consumer import Consumer
 from celery.worker.request import Request, create_request_cls
 from celery.worker.strategy import hybrid_to_proto2, proto1_to_proto2
-from kombu.asynchronous.timer import Timer
+from kombu.asynchronous.timer import Timer, to_timestamp
 from kombu.message import Message
 from kombu.utils.uuid import uuid
 from vine import promise
@@ -185,6 +186,8 @@ class Batches(Task):
         #
         # This adds to a buffer at the end, instead of executing the task as
         # the default strategy does.
+        #
+        # See Batches._do_flush for ETA handling.
         self._pool = consumer.pool
 
         hostname = consumer.hostname
@@ -290,17 +293,37 @@ class Batches(Task):
         logger.debug("Batches: Wake-up to flush buffers...")
 
         ready_requests = []
+        app = self.app
+        to_system_tz = timezone.to_system
+        now = monotonic()
 
         all_requests = list(consume_queue(self._buffer)) + list(
             consume_queue(self._pending)
         )
         for req in all_requests:
-            if req.eta is not None:
-                if req.eta <= datetime.now(timezone.utc):
-                    # ETA has elapsed, request is ready
+            # Similar to logic in celery.worker.strategy.default.
+            if req.eta:
+                try:
+                    if req.utc:
+                        eta = to_timestamp(to_system_tz(req.eta))
+                    else:
+                        eta = to_timestamp(req.eta, app.timezone)
+                except (OverflowError, ValueError) as exc:
+                    logger.error(
+                        "Couldn't convert ETA %r to timestamp: %r. Task: %r",
+                        req.eta,
+                        exc,
+                        req.info(safe=True),
+                        exc_info=True,
+                    )
+                    req.reject(requeue=False)
+                    continue
+
+                if eta <= now:
+                    # ETA has elapsed, request is ready.
                     ready_requests.append(req)
                 else:
-                    # ETA has not elapsed, add to pending queue
+                    # ETA has not elapsed, add to pending queue.
                     self._pending.put(req)
             else:
                 # Request does not have an ETA, ready immediately
