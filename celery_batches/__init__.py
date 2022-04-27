@@ -1,5 +1,6 @@
 from itertools import count, filterfalse, tee
 from queue import Empty, Queue
+from time import monotonic
 from typing import (
     Any,
     Callable,
@@ -22,10 +23,11 @@ from celery.concurrency.base import BasePool
 from celery.utils.imports import symbol_by_name
 from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
+from celery.utils.time import timezone
 from celery.worker.consumer import Consumer
 from celery.worker.request import Request, create_request_cls
 from celery.worker.strategy import hybrid_to_proto2, proto1_to_proto2
-from kombu.asynchronous.timer import Timer
+from kombu.asynchronous.timer import Timer, to_timestamp
 from kombu.message import Message
 from kombu.utils.uuid import uuid
 from vine import promise
@@ -171,6 +173,7 @@ class Batches(Task):
 
     def __init__(self) -> None:
         self._buffer: Queue[Request] = Queue()
+        self._pending: Queue[Request] = Queue()
         self._count = count(1)
         self._tref: Optional[Timer] = None
         self._pool: BasePool = None
@@ -183,6 +186,8 @@ class Batches(Task):
         #
         # This adds to a buffer at the end, instead of executing the task as
         # the default strategy does.
+        #
+        # See Batches._do_flush for ETA handling.
         self._pool = consumer.pool
 
         hostname = consumer.hostname
@@ -285,15 +290,51 @@ class Batches(Task):
         return super().apply(([request],), {}, *_args, **options)
 
     def _do_flush(self) -> None:
-        logger.debug("Batches: Wake-up to flush buffer...")
-        requests = None
-        if self._buffer.qsize():
-            requests = list(consume_queue(self._buffer))
-            if requests:
-                logger.debug("Batches: Buffer complete: %s", len(requests))
-                self.flush(requests)
-        if not requests:
-            logger.debug("Batches: Canceling timer: Nothing in buffer.")
+        logger.debug("Batches: Wake-up to flush buffers...")
+
+        ready_requests = []
+        app = self.app
+        to_system_tz = timezone.to_system
+        now = monotonic()
+
+        all_requests = list(consume_queue(self._buffer)) + list(
+            consume_queue(self._pending)
+        )
+        for req in all_requests:
+            # Similar to logic in celery.worker.strategy.default.
+            if req.eta:
+                try:
+                    if req.utc:
+                        eta = to_timestamp(to_system_tz(req.eta))
+                    else:
+                        eta = to_timestamp(req.eta, app.timezone)
+                except (OverflowError, ValueError) as exc:
+                    logger.error(
+                        "Couldn't convert ETA %r to timestamp: %r. Task: %r",
+                        req.eta,
+                        exc,
+                        req.info(safe=True),
+                        exc_info=True,
+                    )
+                    req.reject(requeue=False)
+                    continue
+
+                if eta <= now:
+                    # ETA has elapsed, request is ready.
+                    ready_requests.append(req)
+                else:
+                    # ETA has not elapsed, add to pending queue.
+                    self._pending.put(req)
+            else:
+                # Request does not have an ETA, ready immediately
+                ready_requests.append(req)
+
+        if len(ready_requests) > 0:
+            logger.debug("Batches: Ready buffer complete: %s", len(ready_requests))
+            self.flush(ready_requests)
+
+        if not ready_requests and self._pending.qsize() == 0:
+            logger.debug("Batches: Canceling timer: Nothing in buffers.")
             if self._tref:
                 self._tref.cancel()  # cancel timer.
             self._tref = None

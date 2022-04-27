@@ -13,6 +13,9 @@ Improvements
   feature for ``Batches`` tasks. (`#39 <https://github.com/clokep/celery-batches/pull/39>`_)
 * Support |using a custom Request class|_ for ``Batches`` tasks.
   (`#63 <https://github.com/clokep/celery-batches/pull/63>`_)
+* Support calling tasks with an ``eta`` or ``countdown`` specified. Contributed by
+  `@weetster <https://github.com/weetster>`_.
+  (`#59 <https://github.com/clokep/celery-batches/pull/59>`_)
 
 Bugfixes
 --------

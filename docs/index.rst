@@ -44,6 +44,36 @@ used to provide values to signals and does not populate into the results backend
         from celery import current_app
         current_app.backend.mark_as_done(request.id, response, request=request)
 
+Retrying tasks
+##############
+
+In order to retry a failed task, the task must be re-executed with the original
+``task_id``, see the example below:
+
+.. code-block:: python
+
+    @app.task(base=Batches, flush_every=100, flush_interval=10)
+    def flaky_task(requests):
+        for request in requests:
+            # Do something that might fail.
+            try:
+                response = might_fail(*request.args, **request.kwargs)
+            except TemporaryError:
+                # Retry the task 10 seconds from now with the same arguments and task_id.
+                flaky_task.apply_async(
+                    args=request.args,
+                    kwargs=request.kwargs,
+                    countdown=10,
+                    task_id=request.id,
+                )
+            else:
+                app.backend.mark_as_done(request.id, response, request=request)
+
+Note that the retried task is still bound by the flush rules of the ``Batches``
+task, it is used as a lower-bound and will not run *before* that timeout. In the
+example above it will run between 10 - 20 seconds from now, assuming no other
+tasks are in the queue.
+
 .. toctree::
    :hidden:
 
