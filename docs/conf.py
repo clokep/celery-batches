@@ -25,7 +25,7 @@ author = "Patrick Cloke"
 release = metadata.version("celery-batches")
 version = ".".join(release.split(".")[0:2])
 
-language = None
+language = "en"
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 

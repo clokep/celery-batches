@@ -3,6 +3,14 @@
 Changelog
 #########
 
+next
+====
+
+Maintenance
+-----------
+
+* Support Celery 5.3. (`#68 <https://github.com/clokep/celery-batches/pull/68>`_)
+
 0.7 (2022-05-02)
 ================
 
