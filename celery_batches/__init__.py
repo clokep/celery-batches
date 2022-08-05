@@ -109,6 +109,9 @@ class SimpleRequest:
 
     #: used similarly to reply_to
     correlation_id = None
+    
+    #: includes all of the original request headers
+    request_dict = {}
 
     #: TODO
     chord = None
@@ -124,6 +127,7 @@ class SimpleRequest:
         ignore_result: bool,
         reply_to: Optional[str],
         correlation_id: Optional[str],
+        request_dict: Optional[dict],
     ):
         self.id = id
         self.name = name
@@ -134,6 +138,7 @@ class SimpleRequest:
         self.ignore_result = ignore_result
         self.reply_to = reply_to
         self.correlation_id = correlation_id
+        self.request_dict = request_dict
 
     @classmethod
     def from_request(cls, request: Request) -> "SimpleRequest":
@@ -151,6 +156,7 @@ class SimpleRequest:
             ignore_result,
             request.reply_to,
             request.correlation_id,
+            request.request_dict,
         )
 
 
