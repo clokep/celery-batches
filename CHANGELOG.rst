@@ -6,6 +6,10 @@ Changelog
 next
 ====
 
+Improvements
+------------
+* Support passing through the `request_dict` from the original Celery request
+
 Maintenance
 -----------
 
