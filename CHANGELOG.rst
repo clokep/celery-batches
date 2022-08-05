@@ -8,7 +8,10 @@ next
 
 Improvements
 ------------
-* Support passing through the `request_dict` from the original Celery request
+
+* Support passing through the `request_dict` from the original Celery request.
+  Contributed by `@montasaurus <https://github.com/montasaurus>`_.
+  (`#71 <https://github.com/clokep/celery-batches/pull/71>`_)
 
 Maintenance
 -----------
