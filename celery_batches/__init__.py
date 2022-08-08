@@ -291,6 +291,7 @@ class Batches(Task):
             ignore_result=options.get("ignore_result", False),
             reply_to=None,
             correlation_id=None,
+            request_dict={},
         )
 
         return super().apply(([request],), {}, *_args, **options)
