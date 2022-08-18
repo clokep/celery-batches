@@ -109,9 +109,9 @@ class SimpleRequest:
 
     #: used similarly to reply_to
     correlation_id = None
-    
+
     #: includes all of the original request headers
-    request_dict = {}
+    request_dict: Dict[str, Any] = {}
 
     #: TODO
     chord = None
