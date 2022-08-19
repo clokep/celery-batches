@@ -111,7 +111,7 @@ class SimpleRequest:
     correlation_id = None
 
     #: includes all of the original request headers
-    request_dict: Dict[str, Any] = {}
+    request_dict: Optional[Dict[str, Any]] = {}
 
     #: TODO
     chord = None
