@@ -127,7 +127,7 @@ class SimpleRequest:
         ignore_result: bool,
         reply_to: Optional[str],
         correlation_id: Optional[str],
-        request_dict: Optional[dict],
+        request_dict: Optional[Dict[str, Any]],
     ):
         self.id = id
         self.name = name
