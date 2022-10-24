@@ -18,7 +18,7 @@ timer and based on the number of queued tasks.
 Some potential use-cases for batching of task calls include:
 
 * De-duplicating tasks.
-* Accumlating / only handling the latest task with similar arguments.
+* Accumalating / only handling the latest task with similar arguments.
 * Bulk inserting / updating of data.
 * Tasks with expensive setup that can run across a range of arguments.
 
