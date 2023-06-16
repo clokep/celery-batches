@@ -72,6 +72,6 @@ texinfo_documents = [
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/dev/", None),
-    "kombu": ("https://docs.celeryq.dev/projects/kombu/en/master/", None),
-    "celery": ("https://docs.celeryq.dev/en/master/", None),
+    "kombu": ("https://docs.celeryq.dev/projects/kombu/en/main/", None),
+    "celery": ("https://docs.celeryq.dev/en/main/", None),
 }
