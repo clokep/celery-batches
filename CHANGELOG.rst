@@ -18,6 +18,7 @@ Maintenance
 
 * Support Celery 5.3. (`#68 <https://github.com/clokep/celery-batches/pull/68>`_,
   `#77 <https://github.com/clokep/celery-batches/pull/77>`_)
+* Drop support for Celery < 5.0. (`#78 <https://github.com/clokep/celery-batches/pull/78>`_)
 * Drop support for Python 3.7. (`#77 <https://github.com/clokep/celery-batches/pull/77>`_)
 
 0.7 (2022-05-02)
