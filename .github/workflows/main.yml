@@ -81,7 +81,7 @@ jobs:
           python -VV
           python -m site
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install --upgrade tox tox-gh-actions
+          python -m pip install --upgrade "tox<4" "tox-gh-actions<3"
 
       - name: "Run tox targets for ${{ matrix.python-version }}"
         env:
@@ -134,7 +134,7 @@ jobs:
           python -VV
           python -m site
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install --upgrade tox tox-gh-actions
+          python -m pip install --upgrade "tox<4" "tox-gh-actions<3"
 
       - name: "Run tox targets"
         env:
