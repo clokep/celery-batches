@@ -3,6 +3,16 @@
 Changelog
 #########
 
+0.8.1 (2023-06-27)
+==================
+
+Bugfixes
+--------
+
+* Fix installing celery-batches with Celery 5.3.
+  (`#80 <https://github.com/clokep/celery-batches/pull/80>`_)
+
+
 0.8 (2023-06-27)
 ================
 
