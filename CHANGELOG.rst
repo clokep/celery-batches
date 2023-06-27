@@ -17,8 +17,10 @@ Maintenance
 -----------
 
 * Support Celery 5.3. (`#68 <https://github.com/clokep/celery-batches/pull/68>`_,
+  `#75 <https://github.com/clokep/celery-batches/pull/75>`_,
   `#77 <https://github.com/clokep/celery-batches/pull/77>`_)
 * Drop support for Celery < 5.0. (`#78 <https://github.com/clokep/celery-batches/pull/78>`_)
+* Support Python 3.11. (`#75 <https://github.com/clokep/celery-batches/pull/75>`_)
 * Drop support for Python 3.7. (`#77 <https://github.com/clokep/celery-batches/pull/77>`_)
 
 0.7 (2022-05-02)
@@ -93,8 +95,8 @@ Maintenance
 
 * Clean-up and re-organize code. (`#31 <https://github.com/clokep/celery-batches/pull/31>`_)
 * Support Celery 5.2. (`#36 <https://github.com/clokep/celery-batches/pull/36>`_)
-* Drop support for Python 3.6. (`#36 <https://github.com/clokep/celery-batches/pull/36>`_)
 * Support Python 3.10. (`#37 <https://github.com/clokep/celery-batches/pull/37>`_)
+* Drop support for Python 3.6. (`#36 <https://github.com/clokep/celery-batches/pull/36>`_)
 * Changed packaging to use setuptools declarative config in ``setup.cfg``.
   (`#37 <https://github.com/clokep/celery-batches/pull/37>`_)
 
@@ -123,7 +125,8 @@ Maintenance
 Maintenance
 -----------
 
-* Support Celery 5.0. Drop support for Celery < 4.4. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
+* Support Celery 5.0. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
+* Drop support for Celery < 4.4. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
 * Drop support for Python < 3.6. (`#21 <https://github.com/clokep/celery-batches/pull/21>`_)
 
 
@@ -146,10 +149,11 @@ Maintenance
 * Improved documentation. Contributed by
   `@nijel <https://github.com/nijel>`_. (`#3 <https://github.com/clokep/celery-batches/pull/3>`_,
   `#7 <https://github.com/clokep/celery-batches/pull/7>`_)
-* Support Python 3.7 and 3.8. Drop support for Python 3.4. (`#19 <https://github.com/clokep/celery-batches/pull/19>`_)
 * Support Celery 4.2, 4.3, and 4.4. (`#12 <https://github.com/clokep/celery-batches/pull/12>`_,
   `#14 <https://github.com/clokep/celery-batches/pull/14>`_,
   `#19 <https://github.com/clokep/celery-batches/pull/19>`_)
+* Support Python 3.7 and 3.8. (`#19 <https://github.com/clokep/celery-batches/pull/19>`_)
+* Drop support for Python 3.4. (`#19 <https://github.com/clokep/celery-batches/pull/19>`_)
 * CI improvements. (`#5 <https://github.com/clokep/celery-batches/pull/5>`_,
   `#11 <https://github.com/clokep/celery-batches/pull/11>`_,
   `#13 <https://github.com/clokep/celery-batches/pull/13>`_,)
