@@ -9,7 +9,7 @@ Changelog
 Bugfixes
 --------
 
-* Fix installing celery-batches with Celery 5.3.
+* Fix installing celery-batches with Celery 5.3. Contributed by `@stegayet <https://github.com/stegayet>`_.
   (`#80 <https://github.com/clokep/celery-batches/pull/80>`_)
 
 
@@ -26,7 +26,8 @@ Improvements
 Maintenance
 -----------
 
-* Support Celery 5.3. (`#68 <https://github.com/clokep/celery-batches/pull/68>`_,
+* Support Celery 5.3.  Contributed by `@stegayet <https://github.com/stegayet>`_.
+  (`#68 <https://github.com/clokep/celery-batches/pull/68>`_,
   `#75 <https://github.com/clokep/celery-batches/pull/75>`_,
   `#77 <https://github.com/clokep/celery-batches/pull/77>`_)
 * Drop support for Celery < 5.0. (`#78 <https://github.com/clokep/celery-batches/pull/78>`_)
