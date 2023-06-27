@@ -27,7 +27,7 @@ What do I need?
 
 celery-batches version runs on,
 
-- Python (3.8, 3.9, 3.10)
+- Python (3.8, 3.9, 3.10, 3.11)
 - PyPy3 (7.6)
 
 And is tested with Celery >= 5.0.
