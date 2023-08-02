@@ -270,7 +270,6 @@ class Batches(Task):
                     expires=request.expires and request.expires.isoformat(),
                 )
 
-
             if self._tref is None:  # first request starts flush timer.
                 self._tref = timer.call_repeatedly(self.flush_interval, flush_buffer)
 
@@ -376,13 +375,14 @@ class Batches(Task):
             for request in requests:
                 request.send_event('task-started')
 
-        def on_return(failed__retval__runtime, **kwargs) -> None:
-            failed, retval, runtime = failed__retval__runtime
-
+        def on_return(result: Optional[Any]) -> None:
             for req in acks_late:
                 req.acknowledge()
             for request in requests:
-                request.send_event('task-succeeded', ret_val=retval,runtime=runtime )
+                runtime = 0
+                if type(result) == int:
+                    runtime = result
+                request.send_event('task-succeeded',result=None, runtime=runtime )
         return self._pool.apply_async(
             apply_batches_task,
             (self, serializable_requests, 0, None),
