@@ -17,6 +17,7 @@ from typing import (
 from celery_batches.trace import apply_batches_task
 
 from celery import VERSION as CELERY_VERSION
+from celery import signals
 from celery.app import Celery
 from celery.app.task import Task
 from celery.concurrency.base import BasePool
@@ -237,7 +238,7 @@ class Batches(Task):
                 else:
                     body, headers, decoded, utc = proto1_to_proto2(message, body)
 
-            request = Req(
+            req = Req(
                 message,
                 on_ack=ack,
                 on_reject=reject,
@@ -251,7 +252,9 @@ class Batches(Task):
                 utc=utc,
                 connection_errors=connection_errors,
             )
-            put_buffer(request)
+            put_buffer(req)
+
+            signals.task_received.send(sender=consumer, request=req)
 
             if self._tref is None:  # first request starts flush timer.
                 self._tref = timer.call_repeatedly(self.flush_interval, flush_buffer)

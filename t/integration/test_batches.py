@@ -157,13 +157,13 @@ def test_signals(celery_app: Celery, celery_worker: TestWorkController) -> None:
         (signals.before_task_publish, 2),
         (signals.after_task_publish, 2),
         (signals.task_sent, 2),
-        # The task only runs a single time.
+        (signals.task_received, 2),
+        # The Batch task only runs a single time.
         (signals.task_prerun, 1),
         (signals.task_postrun, 1),
-        (signals.task_received, 0),
+        (signals.task_success, 1),
         # Other task signals are not implemented.
         (signals.task_retry, 0),
-        (signals.task_success, 1),
         (signals.task_failure, 0),
         (signals.task_revoked, 0),
         (signals.task_internal_error, 0),

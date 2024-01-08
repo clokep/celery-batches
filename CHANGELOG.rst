@@ -3,6 +3,15 @@
 Changelog
 #########
 
+next
+====
+
+Improvements
+------------
+
+* Call the task received signal for ``Batches`` task. (`#85 <https://github.com/clokep/celery-batches/pull/85>`_)
+
+
 0.8.1 (2023-06-27)
 ==================
 
@@ -33,6 +42,7 @@ Maintenance
 * Drop support for Celery < 5.0. (`#78 <https://github.com/clokep/celery-batches/pull/78>`_)
 * Support Python 3.11. (`#75 <https://github.com/clokep/celery-batches/pull/75>`_)
 * Drop support for Python 3.7. (`#77 <https://github.com/clokep/celery-batches/pull/77>`_)
+
 
 0.7 (2022-05-02)
 ================
