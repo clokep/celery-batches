@@ -6,6 +6,11 @@ Changelog
 next
 ====
 
+Packaging
+---------
+
+- Remove upper version constraint on ``celery`` package. (`#89 <https://github.com/clokep/celery-batches/pull/89>`_)
+
 Improvements
 ------------
 
