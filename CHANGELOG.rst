@@ -12,6 +12,13 @@ Improvements
 * Call the task received signal for ``Batches`` task. (`#85 <https://github.com/clokep/celery-batches/pull/85>`_)
 
 
+Maintenance
+-----------
+
+* Limit test requirements to ``pytest-celery~=0.0.0`` for an incompatibility with 1.0.0.
+  (`#90 <https://github.com/clokep/celery-batches/pull/90>`_)
+
+
 0.8.1 (2023-06-27)
 ==================
 
