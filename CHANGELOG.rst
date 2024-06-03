@@ -3,14 +3,13 @@
 Changelog
 #########
 
-next
-====
+0.9 (2024-06-03)
+================
 
 Improvements
 ------------
 
 * Call the task received signal for ``Batches`` task. (`#85 <https://github.com/clokep/celery-batches/pull/85>`_)
-
 
 Maintenance
 -----------
