@@ -17,6 +17,7 @@ Maintenance
 
 * Limit test requirements to ``pytest-celery~=0.0.0`` for an incompatibility with 1.0.0.
   (`#90 <https://github.com/clokep/celery-batches/pull/90>`_)
+* Bump black to 24.3.0. (`#86 <https://github.com/clokep/celery-batches/pull/86>`_)
 
 
 0.8.1 (2023-06-27)
