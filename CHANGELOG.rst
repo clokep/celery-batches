@@ -18,6 +18,8 @@ Maintenance
 * Limit test requirements to ``pytest-celery~=0.0.0`` for an incompatibility with 1.0.0.
   (`#90 <https://github.com/clokep/celery-batches/pull/90>`_)
 * Bump black to 24.3.0. (`#86 <https://github.com/clokep/celery-batches/pull/86>`_)
+* Support Celery 5.4. (`#91 <https://github.com/clokep/celery-batches/pull/91>`_)
+* Support Python 3.12. (`#91 <https://github.com/clokep/celery-batches/pull/91>`_)
 
 
 0.8.1 (2023-06-27)
