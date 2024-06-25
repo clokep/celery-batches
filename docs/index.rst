@@ -14,8 +14,9 @@ Some potential use-cases for batching of task calls include:
 * Bulk inserting / updating of data.
 * Tasks with expensive setup that can run across a range of arguments.
 
-For the ``Batches`` task to work properly you must configure :setting:`worker_prefetch_multiplier`
-to zero, or some value where the final multiplied value is higher than ``flush_every``.
+For the :class:`~celery_batches.Batches` task to work properly you must configure
+:setting:`worker_prefetch_multiplier` to zero, or some value where the final
+multiplied value is higher than :attr:`~celery_batches.Batches.flush_every`.
 
 .. warning::
 
@@ -31,8 +32,9 @@ Returning results
 #################
 
 It is possible to return a result for each task request by calling ``mark_as_done``
-on your results backend. Returning a value from the ``Batches`` task call is only
-used to provide values to signals and does not populate into the results backend.
+on your results backend. Returning a value from the :class:`~celery_batches.Batches`
+task call is only used to provide values to signals and does not populate into the
+results backend.
 
 .. note::
 
@@ -48,7 +50,7 @@ Retrying tasks
 ##############
 
 In order to retry a failed task, the task must be re-executed with the original
-``task_id``, see the example below:
+task :attr:`~celery.worker.request.Request.id`, see the example below:
 
 .. code-block:: python
 
@@ -69,7 +71,7 @@ In order to retry a failed task, the task must be re-executed with the original
             else:
                 app.backend.mark_as_done(request.id, response, request=request)
 
-Note that the retried task is still bound by the flush rules of the ``Batches``
+Note that the retried task is still bound by the flush rules of the :class:`~celery_batches.Batches`
 task, it is used as a lower-bound and will not run *before* that timeout. In the
 example above it will run between 10 - 20 seconds from now, assuming no other
 tasks are in the queue.
@@ -79,4 +81,5 @@ tasks are in the queue.
 
    examples
    api
+   how_it_works
    history

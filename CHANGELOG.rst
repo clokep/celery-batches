@@ -3,6 +3,15 @@
 Changelog
 #########
 
+next
+====
+
+Improvements
+------------
+
+* Improve documentation. (`#92 <https://github.com/clokep/celery-batches/pull/45>`_)
+
+
 0.9 (2024-06-03)
 ================
 
