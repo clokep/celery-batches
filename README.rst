@@ -47,6 +47,7 @@ an older version of celery-batches:
 - Celery < 4.0: Use `celery.contrib.batches` instead.
 - Celery 4.0 - 4.3: celery-batches 0.3.
 - Celery 4.4: celery-batches 0.7.
+- Celery 5.0 - 5.1: celery-batches 0.9.
 
 History
 =======
