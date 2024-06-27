@@ -9,7 +9,12 @@ next
 Improvements
 ------------
 
-* Improve documentation. (`#92 <https://github.com/clokep/celery-batches/pull/45>`_)
+* Improve documentation. (`#92 <https://github.com/clokep/celery-batches/pull/92>`_)
+
+Maintenance
+-----------
+
+* Drop support for Celery < 5.2. (`#92 <https://github.com/clokep/celery-batches/pull/92>`_)
 
 
 0.9 (2024-06-03)
