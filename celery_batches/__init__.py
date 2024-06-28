@@ -201,6 +201,10 @@ class Batches(Task):
         connection_errors = consumer.connection_errors
 
         eventer = consumer.event_dispatcher
+        events = eventer and eventer.enabled
+        send_event = eventer and eventer.send
+        task_sends_events = events and task.send_events
+
 
         Request = symbol_by_name(task.Request)
         # Celery 5.1 added the app argument to create_request_cls.
@@ -255,6 +259,18 @@ class Batches(Task):
             put_buffer(req)
 
             signals.task_received.send(sender=consumer, request=req)
+
+            signals.task_received.send(sender=consumer, request=request)
+            if task_sends_events:
+                send_event(
+                    'task-received',
+                    uuid=request.id, name=request.name,
+                    args=request.argsrepr, kwargs=request.kwargsrepr,
+                    root_id=request.root_id, parent_id=request.parent_id,
+                    retries=request.request_dict.get('retries', 0),
+                    eta=request.eta and request.eta.isoformat(),
+                    expires=request.expires and request.expires.isoformat(),
+                )
 
             if self._tref is None:  # first request starts flush timer.
                 self._tref = timer.call_repeatedly(self.flush_interval, flush_buffer)
@@ -354,15 +370,21 @@ class Batches(Task):
 
         # Ensure the requests can be serialized using pickle for the prefork pool.
         serializable_requests = ([SimpleRequest.from_request(r) for r in requests],)
-
+            
         def on_accepted(pid: int, time_accepted: float) -> None:
             for req in acks_early:
                 req.acknowledge()
+            for request in requests:
+                request.send_event('task-started')
 
         def on_return(result: Optional[Any]) -> None:
             for req in acks_late:
                 req.acknowledge()
-
+            for request in requests:
+                runtime = 0
+                if type(result) == int:
+                    runtime = result
+                request.send_event('task-succeeded',result=None, runtime=runtime )
         return self._pool.apply_async(
             apply_batches_task,
             (self, serializable_requests, 0, None),
