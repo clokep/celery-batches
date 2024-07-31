@@ -9,6 +9,8 @@ from celery.app.task import Task
 from celery.contrib.testing.tasks import ping
 from celery.contrib.testing.worker import TestWorkController
 from celery.result import allow_join_result
+from celery.utils.dispatch import Signal
+from celery.worker.consumer.consumer import Consumer
 from celery.worker.request import Request
 
 import pytest
@@ -18,20 +20,28 @@ from .tasks import add, cumadd
 
 class SignalCounter:
     def __init__(
-        self, expected_calls: int, callback: Optional[Callable[..., None]] = None
+        self,
+        signal: Signal,
+        expected_calls: int,
+        callback: Optional[Callable[..., None]] = None,
     ):
+        self.signal = signal
+        signal.connect(self)
         self.calls = 0
         self.expected_calls = expected_calls
         self.callback = callback
 
-    def __call__(self, sender: Union[Task, str], **kwargs: Any) -> None:
+    def __call__(self, sender: Union[Task, str, Consumer], **kwargs: Any) -> None:
         if isinstance(sender, Task):
-            sender_name = sender.name
+            task_name = sender.name
+        elif isinstance(sender, Consumer):
+            assert self.signal == signals.task_received
+            task_name = kwargs["request"].name
         else:
-            sender_name = sender
+            task_name = sender
 
         # Ignore pings, those are used to ensure the worker processes tasks.
-        if sender_name == "celery.ping":
+        if task_name == "celery.ping":
             return
 
         self.calls += 1
@@ -41,7 +51,9 @@ class SignalCounter:
             self.callback(sender, **kwargs)
 
     def assert_calls(self) -> None:
-        assert self.calls == self.expected_calls
+        assert (
+            self.calls == self.expected_calls
+        ), f"Signal {self.signal.name} called incorrect number of times."
 
 
 def _wait_for_ping(ping_task_timeout: float = 10.0) -> None:
@@ -144,21 +156,23 @@ def test_signals(celery_app: Celery, celery_worker: TestWorkController) -> None:
         # Each task request gets published separately.
         (signals.before_task_publish, 2),
         (signals.after_task_publish, 2),
-        # The task only runs a single time.
+        (signals.task_sent, 2),
+        (signals.task_received, 2),
+        # The Batch task only runs a single time.
         (signals.task_prerun, 1),
         (signals.task_postrun, 1),
+        (signals.task_success, 1),
         # Other task signals are not implemented.
         (signals.task_retry, 0),
-        (signals.task_success, 1),
         (signals.task_failure, 0),
         (signals.task_revoked, 0),
+        (signals.task_internal_error, 0),
         (signals.task_unknown, 0),
         (signals.task_rejected, 0),
     )
     signal_counters = []
     for sig, expected_count in checks:
-        counter = SignalCounter(expected_count)
-        sig.connect(counter)
+        counter = SignalCounter(sig, expected_count)
         signal_counters.append(counter)
 
     # The batch runs after 2 task calls.
@@ -182,8 +196,7 @@ def test_current_task(celery_app: Celery, celery_worker: TestWorkController) -> 
     def signal(sender: Union[Task, str], **kwargs: Any) -> None:
         assert celery_app.current_task.name == "t.integration.tasks.add"
 
-    counter = SignalCounter(1, signal)
-    signals.task_prerun.connect(counter)
+    counter = SignalCounter(signals.task_prerun, 1, signal)
 
     # The batch runs after 2 task calls.
     result_1 = add.delay(1)

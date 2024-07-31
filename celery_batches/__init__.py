@@ -242,7 +242,7 @@ class Batches(Task):
                 else:
                     body, headers, decoded, utc = proto1_to_proto2(message, body)
 
-            request = Req(
+            req = Req(
                 message,
                 on_ack=ack,
                 on_reject=reject,
@@ -256,7 +256,9 @@ class Batches(Task):
                 utc=utc,
                 connection_errors=connection_errors,
             )
-            put_buffer(request)
+            put_buffer(req)
+
+            signals.task_received.send(sender=consumer, request=req)
 
             signals.task_received.send(sender=consumer, request=request)
             if task_sends_events:
