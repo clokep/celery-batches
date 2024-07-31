@@ -22,8 +22,11 @@ logger = get_logger(__name__)
 send_prerun = signals.task_prerun.send
 send_postrun = signals.task_postrun.send
 send_success = signals.task_success.send
+send_failure = signals.task_failure.send
+send_revoked = signals.task_revoked.send
 SUCCESS = states.SUCCESS
 FAILURE = states.FAILURE
+REVOKED = states.REVOKED
 
 
 def apply_batches_task(
@@ -38,6 +41,14 @@ def apply_batches_task(
     prerun_receivers = signals.task_prerun.receivers
     postrun_receivers = signals.task_postrun.receivers
     success_receivers = signals.task_success.receivers
+    failure_receivers = signals.task_failure.receivers
+    revoked_receivers = signals.task_revoked.receivers
+
+    logger.debug(f"Debug: prerun_receivers: {prerun_receivers}")
+    logger.debug(f"Debug: postrun_receivers: {postrun_receivers}")
+    logger.debug(f"Debug: success_receivers: {success_receivers}")
+    logger.debug(f"Debug: failure_receivers: {failure_receivers}")
+    logger.debug(f"Debug: revoked_receivers: {revoked_receivers}")
 
     # Corresponds to multiple requests, so generate a new UUID.
     task_id = uuid()
@@ -49,22 +60,35 @@ def apply_batches_task(
     try:
         # -*- PRE -*-
         if prerun_receivers:
+            logger.debug("Debug: Sending prerun signal")
             send_prerun(sender=task, task_id=task_id, task=task, args=args, kwargs={})
 
         # -*- TRACE -*-
         try:
-            result = task(*args)
-            state = SUCCESS
+            result = task.run(*args)
+            if hasattr(task.request, 'state') and task.request.state == REVOKED:
+                state = REVOKED
+            else:
+                state = SUCCESS
         except Exception as exc:
-            result = None
+            result = exc
             state = FAILURE
             logger.error("Error: %r", exc, exc_info=True)
+            if failure_receivers:
+                logger.debug("Debug: Sending failure signal")
+                send_failure(sender=task, task_id=task_id, exception=exc, args=args, kwargs={}, einfo=None)
         else:
-            if success_receivers:
+            if state == REVOKED:
+                if revoked_receivers:
+                    logger.debug("Debug: Sending revoked signal")
+                    send_revoked(sender=task, request=task_request, terminated=True, signum=None, expired=False)
+            elif state == SUCCESS and success_receivers:
+                logger.debug("Debug: Sending success signal")
                 send_success(sender=task, result=result)
     finally:
         try:
             if postrun_receivers:
+                logger.debug("Debug: Sending postrun signal")
                 send_postrun(
                     sender=task,
                     task_id=task_id,
