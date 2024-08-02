@@ -271,7 +271,7 @@ class Batches(Task):
                     root_id=req.root_id,
                     parent_id=req.parent_id,
                     retries=req.request_dict.get('retries', 0),
-                    eta=req.eta and request.eta.isoformat(),
+                    eta=req.eta and req.eta.isoformat(),
                     expires=req.expires and req.expires.isoformat(),
                 )
 
@@ -373,7 +373,7 @@ class Batches(Task):
 
         # Ensure the requests can be serialized using pickle for the prefork pool.
         serializable_requests = ([SimpleRequest.from_request(r) for r in requests],)
-            
+
         def on_accepted(pid: int, time_accepted: float) -> None:
             for req in acks_early:
                 req.acknowledge()
@@ -385,9 +385,9 @@ class Batches(Task):
                 req.acknowledge()
             for request in requests:
                 runtime = 0
-                if type(result) == int:
+                if isinstance(result, int):
                     runtime = result
-                request.send_event('task-succeeded', result=None, runtime=runtime )
+                request.send_event('task-succeeded', result=None, runtime=runtime)
         return self._pool.apply_async(
             apply_batches_task,
             (self, serializable_requests, 0, None),

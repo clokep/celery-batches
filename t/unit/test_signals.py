@@ -127,7 +127,6 @@ def test_all_signals_sent(batch_task, simple_request):
                         send_postrun=DEFAULT,
                         send_success=DEFAULT) as mocks:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
-        
         for mock in mocks.values():
             mock.assert_called_once()
 

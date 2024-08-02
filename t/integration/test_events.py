@@ -5,10 +5,12 @@ from typing import List
 import asyncio
 import logging
 
+
 pytest_plugins = ('pytest_asyncio',)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
 
 def setup_celery():
     app = Celery('myapp')
@@ -23,7 +25,9 @@ def setup_celery():
     )
     return app
 
+
 celery_app = setup_celery()
+
 
 @celery_app.task(base=Batches, flush_every=2, flush_interval=0.1)
 def add(requests: List[SimpleRequest]) -> int:
@@ -33,13 +37,17 @@ def add(requests: List[SimpleRequest]) -> int:
     Marks the result of each task as the sum.
     """
     logger.debug(f"Processing {len(requests)} requests")
-    result = sum(sum(request.args) + sum(request.kwargs.values()) for request in requests)
+    result = sum(
+        sum(request.args) + sum(request.kwargs.values())
+        for request in requests
+    )
 
     for request in requests:
         celery_app.backend.mark_as_done(request.id, result, request=request)
 
     logger.debug(f"Finished processing. Result: {result}")
     return result
+
 
 @pytest.mark.asyncio
 async def test_tasks_for_add(celery_worker):
