@@ -1,7 +1,6 @@
 import pytest
-from unittest.mock import Mock, patch, DEFAULT
+from unittest.mock import patch, DEFAULT
 from celery import signals
-from celery_batches import Batches
 from celery_batches.trace import apply_batches_task
 from celery.utils.collections import AttributeDict
 
@@ -43,6 +42,7 @@ def batch_task():
     tb._request = AttributeDict({'state': None})
 
     return tb
+
 
 @pytest.fixture
 def simple_request():
@@ -143,6 +143,6 @@ def test_failure_signals_sent(batch_task, simple_request):
                         send_postrun=DEFAULT,
                         send_failure=DEFAULT) as mocks:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
-        
+
         for mock in mocks.values():
             mock.assert_called_once()
