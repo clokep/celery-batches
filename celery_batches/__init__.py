@@ -203,9 +203,7 @@ class Batches(Task):
         eventer = consumer.event_dispatcher
         events = eventer and eventer.enabled
         send_event = eventer and eventer.send
-        task_sends_events = (
-            events and task.send_events
-        )
+        task_sends_events = events and task.send_events
 
         Request = symbol_by_name(task.Request)
         # Celery 5.1 added the app argument to create_request_cls.
@@ -263,14 +261,14 @@ class Batches(Task):
 
             if task_sends_events:
                 send_event(
-                    'task-received',
+                    "task-received",
                     uuid=req.id,
                     name=req.name,
                     args=req.argsrepr,
                     kwargs=req.kwargsrepr,
                     root_id=req.root_id,
                     parent_id=req.parent_id,
-                    retries=req.request_dict.get('retries', 0),
+                    retries=req.request_dict.get("retries", 0),
                     eta=req.eta and req.eta.isoformat(),
                     expires=req.expires and req.expires.isoformat(),
                 )
@@ -378,7 +376,7 @@ class Batches(Task):
             for req in acks_early:
                 req.acknowledge()
             for request in requests:
-                request.send_event('task-started')
+                request.send_event("task-started")
 
         def on_return(result: Optional[Any]) -> None:
             for req in acks_late:
@@ -387,7 +385,8 @@ class Batches(Task):
                 runtime = 0
                 if isinstance(result, int):
                     runtime = result
-                request.send_event('task-succeeded', result=None, runtime=runtime)
+                request.send_event("task-succeeded", result=None, runtime=runtime)
+
         return self._pool.apply_async(
             apply_batches_task,
             (self, serializable_requests, 0, None),

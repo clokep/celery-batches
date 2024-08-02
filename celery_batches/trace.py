@@ -6,7 +6,7 @@ errors are recorded, handlers are applied and so on.
 Mimics some of the functionality found in celery.app.trace.trace_task.
 """
 
-from typing import TYPE_CHECKING, Any, List, Tuple
+from typing import TYPE_CHECKING, Any, List, Tuple, Union
 
 from celery import signals, states
 from celery._state import _task_stack
@@ -57,25 +57,19 @@ def apply_batches_task(
     task_request = Context(loglevel=loglevel, logfile=logfile)
     push_request(task_request)
 
+    result: Union[Any, Exception]
+    state: str
+
     try:
         # -*- PRE -*-
         if prerun_receivers:
             logger.debug("Debug: Sending prerun signal")
-            send_prerun(
-                sender=task,
-                task_id=task_id,
-                task=task,
-                args=args,
-                kwargs={}
-            )
+            send_prerun(sender=task, task_id=task_id, task=task, args=args, kwargs={})
 
         # -*- TRACE -*-
         try:
             result = task.run(*args)
-            if hasattr(task.request, 'state') and task.request.state == REVOKED:
-                state = REVOKED
-            else:
-                state = SUCCESS
+            state = REVOKED if hasattr(task.request, "state") and task.request.state == REVOKED else SUCCESS
         except Exception as exc:
             result = exc
             state = FAILURE
@@ -88,22 +82,23 @@ def apply_batches_task(
                     exception=exc,
                     args=args,
                     kwargs={},
-                    einfo=None
+                    einfo=None,
                 )
-        else:
-            if state == REVOKED:
-                if revoked_receivers:
-                    logger.debug("Debug: Sending revoked signal")
-                    send_revoked(
-                        sender=task,
-                        request=task_request,
-                        terminated=True,
-                        signum=None,
-                        expired=False
-                    )
-            elif state == SUCCESS and success_receivers:
-                logger.debug("Debug: Sending success signal")
-                send_success(sender=task, result=result)
+
+        # Handle signals based on the state
+        if state == REVOKED and revoked_receivers:
+            logger.debug("Debug: Sending revoked signal")
+            send_revoked(
+                sender=task,
+                request=task_request,
+                terminated=True,
+                signum=None,
+                expired=False,
+            )
+        elif state == SUCCESS and success_receivers:
+            logger.debug("Debug: Sending success signal")
+            send_success(sender=task, result=result)
+
     finally:
         try:
             if postrun_receivers:

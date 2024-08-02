@@ -1,22 +1,29 @@
+from unittest.mock import DEFAULT, patch
+from typing import Any, Dict, List, Optional, Generator
+
+from celery_batches import Batches, SimpleRequest  # type: ignore
+from celery_batches.trace import apply_batches_task  # type: ignore
+
+from celery import signals  # type: ignore
+from celery.utils.collections import AttributeDict  # type: ignore
+
 import pytest
-from unittest.mock import patch, DEFAULT
-from celery import signals
-from celery_batches.trace import apply_batches_task
-from celery.utils.collections import AttributeDict
 
 
-class TestBatchTask:
+class TestBatchTask(Batches):
+    _request_stack: List[Any]
+    _request: AttributeDict
 
     @property
-    def request_stack(self):
+    def request_stack(self) -> Any:
         class RequestStack:
-            def __init__(self, stack):
+            def __init__(self, stack: List[Any]):
                 self.stack = stack
 
-            def push(self, item):
+            def push(self, item: Any) -> None:
                 self.stack.append(item)
 
-            def pop(self):
+            def pop(self) -> Optional[Any]:
                 if self.stack:
                     return self.stack.pop()
                 return None
@@ -24,45 +31,47 @@ class TestBatchTask:
         return RequestStack(self._request_stack)
 
     @property
-    def request(self):
+    def request(self) -> AttributeDict:
         return self._request
 
     @request.setter
-    def request(self, value):
+    def request(self, value: AttributeDict) -> None:
         self._request = value
 
-    def run(self, requests):
-        return [request['id'] for request in requests]
+    def run(self, *args: Any, **kwargs: Any) -> List[str]:
+        requests = args[0] if args else kwargs.get('requests', [])
+        result = [request.id for request in requests if hasattr(request, 'id')]
+        return result  # Changed from raise NoReturn to return
 
 
 @pytest.fixture
-def batch_task():
+def batch_task() -> TestBatchTask:
     tb = TestBatchTask()
     tb._request_stack = []
-    tb._request = AttributeDict({'state': None})
+    tb._request = AttributeDict({"state": None})
 
     return tb
 
 
 @pytest.fixture
-def simple_request():
-    return {
-        'id': "test_id",
-        'name': "test_task",
-        'args': (),
-        'kwargs': {},
-        'delivery_info': {},
-        'hostname': "test_host",
-        'ignore_result': False,
-        'reply_to': None,
-        'correlation_id': None,
-        'request_dict': {},
-    }
+def simple_request() -> SimpleRequest:
+    return SimpleRequest(
+        id="test_id",
+        name="test_task",
+        args=(),
+        kwargs={},
+        delivery_info={},
+        hostname="test_host",
+        ignore_result=False,
+        reply_to=None,
+        correlation_id=None,
+        request_dict={},
+    )
 
 
 @pytest.fixture(autouse=True)
-def setup_signal_receivers():
-    def dummy_receiver(*args, **kwargs):
+def setup_signal_receivers() -> Generator[None, None, None]:
+    def dummy_receiver(*args: Any, **kwargs: Any) -> None:
         pass
 
     signals.task_prerun.connect(dummy_receiver)
@@ -80,67 +89,71 @@ def setup_signal_receivers():
     signals.task_revoked.disconnect(dummy_receiver)
 
 
-def test_task_prerun_signal(batch_task, simple_request):
-    with patch('celery_batches.trace.send_prerun') as mock_send:
+def test_task_prerun_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+    with patch("celery_batches.trace.send_prerun") as mock_send:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         mock_send.assert_called_once()
 
 
-def test_task_postrun_signal(batch_task, simple_request):
-    with patch('celery_batches.trace.send_postrun') as mock_send:
+def test_task_postrun_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+    with patch("celery_batches.trace.send_postrun") as mock_send:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         mock_send.assert_called_once()
 
 
-def test_task_success_signal(batch_task, simple_request):
-    with patch('celery_batches.trace.send_success') as mock_send:
+def test_task_success_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+    with patch("celery_batches.trace.send_success") as mock_send:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         mock_send.assert_called_once()
 
 
-def test_task_failure_signal(batch_task, simple_request):
-    def failing_run(requests):
+def test_task_failure_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+    def failing_run(*args: Any, **kwargs: Any) -> None:
         raise ValueError("Test exception")
 
-    batch_task.run = failing_run
+    batch_task.run = failing_run  # type: ignore
 
-    with patch('celery_batches.trace.send_failure') as mock_send:
+    with patch("celery_batches.trace.send_failure") as mock_send:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         mock_send.assert_called_once()
 
 
-def test_task_revoked_signal(batch_task, simple_request):
-    def revoking_run(requests):
-        batch_task.request.state = 'REVOKED'
-        return []
+def test_task_revoked_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+    def revoking_run(*args: Any, **kwargs: Any) -> None:
+        batch_task.request.state = "REVOKED"
+        return []  # Changed from raise NoReturn to return
 
-    batch_task.run = revoking_run
+    batch_task.run = revoking_run  # type: ignore
 
-    with patch('celery_batches.trace.send_revoked') as mock_send:
+    with patch("celery_batches.trace.send_revoked") as mock_send:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         mock_send.assert_called_once()
 
 
-def test_all_signals_sent(batch_task, simple_request):
-    with patch.multiple('celery_batches.trace',
-                        send_prerun=DEFAULT,
-                        send_postrun=DEFAULT,
-                        send_success=DEFAULT) as mocks:
+def test_all_signals_sent(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+    with patch.multiple(
+        "celery_batches.trace",
+        send_prerun=DEFAULT,
+        send_postrun=DEFAULT,
+        send_success=DEFAULT,
+    ) as mocks:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         for mock in mocks.values():
             mock.assert_called_once()
 
 
-def test_failure_signals_sent(batch_task, simple_request):
-    def failing_run(requests):
+def test_failure_signals_sent(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+    def failing_run(*args: Any, **kwargs: Any) -> None:
         raise ValueError("Test exception")
 
-    batch_task.run = failing_run
+    batch_task.run = failing_run  # type: ignore
 
-    with patch.multiple('celery_batches.trace',
-                        send_prerun=DEFAULT,
-                        send_postrun=DEFAULT,
-                        send_failure=DEFAULT) as mocks:
+    with patch.multiple(
+        "celery_batches.trace",
+        send_prerun=DEFAULT,
+        send_postrun=DEFAULT,
+        send_failure=DEFAULT,
+    ) as mocks:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
 
         for mock in mocks.values():
