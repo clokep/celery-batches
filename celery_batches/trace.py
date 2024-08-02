@@ -61,7 +61,13 @@ def apply_batches_task(
         # -*- PRE -*-
         if prerun_receivers:
             logger.debug("Debug: Sending prerun signal")
-            send_prerun(sender=task, task_id=task_id, task=task, args=args, kwargs={})
+            send_prerun(
+                sender=task,
+                task_id=task_id,
+                task=task,
+                args=args,
+                kwargs={}
+            )
 
         # -*- TRACE -*-
         try:
@@ -76,21 +82,25 @@ def apply_batches_task(
             logger.error("Error: %r", exc, exc_info=True)
             if failure_receivers:
                 logger.debug("Debug: Sending failure signal")
-                send_failure(sender=task, 
-                    task_id=task_id, 
-                    exception=exc, 
-                    args=args, 
-                    kwargs={}, 
-                    einfo=None)
+                send_failure(
+                    sender=task,
+                    task_id=task_id,
+                    exception=exc,
+                    args=args,
+                    kwargs={},
+                    einfo=None
+                )
         else:
             if state == REVOKED:
                 if revoked_receivers:
                     logger.debug("Debug: Sending revoked signal")
-                    send_revoked(sender=task, 
-                        request=task_request, 
-                        terminated=True, 
-                        signum=None, 
-                        expired=False)
+                    send_revoked(
+                        sender=task,
+                        request=task_request,
+                        terminated=True,
+                        signum=None,
+                        expired=False
+                    )
             elif state == SUCCESS and success_receivers:
                 logger.debug("Debug: Sending success signal")
                 send_success(sender=task, result=result)

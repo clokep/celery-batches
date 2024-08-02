@@ -203,8 +203,9 @@ class Batches(Task):
         eventer = consumer.event_dispatcher
         events = eventer and eventer.enabled
         send_event = eventer and eventer.send
-        task_sends_events = events and task.send_events
-
+        task_sends_events = (
+            events and task.send_events
+        )
 
         Request = symbol_by_name(task.Request)
         # Celery 5.1 added the app argument to create_request_cls.
@@ -263,9 +264,12 @@ class Batches(Task):
             if task_sends_events:
                 send_event(
                     'task-received',
-                    uuid=req.id, name=req.name,
-                    args=req.argsrepr, kwargs=req.kwargsrepr,
-                    root_id=req.root_id, parent_id=req.parent_id,
+                    uuid=req.id,
+                    name=req.name,
+                    args=req.argsrepr,
+                    kwargs=req.kwargsrepr,
+                    root_id=req.root_id,
+                    parent_id=req.parent_id,
                     retries=req.request_dict.get('retries', 0),
                     eta=req.eta and request.eta.isoformat(),
                     expires=req.expires and req.expires.isoformat(),

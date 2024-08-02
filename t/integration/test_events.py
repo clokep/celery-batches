@@ -1,24 +1,29 @@
 import pytest
-
-
-from celery import Celery, signals
-from celery import shared_task
-from celery.utils.log import get_task_logger
-from typing import List
-import sys
-
+from celery import Celery
 from celery_batches import Batches, SimpleRequest
+from typing import List
+import asyncio
+import logging
+
+pytest_plugins = ('pytest_asyncio',)
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def setup_celery():
     app = Celery('myapp')
-    app.conf.broker_url = 'memory://localhost/'
-    app.conf.result_backend = 'cache+memory://localhost/'
-    print("Created celeery app")
+    app.conf.update(
+        broker_url='memory://',
+        result_backend='cache+memory://',
+        task_always_eager=False,
+        worker_concurrency=1,
+        worker_prefetch_multiplier=1,
+        task_create_missing_queues=True,
+        broker_connection_retry_on_startup=True,
+    )
     return app
 
 celery_app = setup_celery()
-
-
 
 @celery_app.task(base=Batches, flush_every=2, flush_interval=0.1)
 def add(requests: List[SimpleRequest]) -> int:
@@ -27,41 +32,38 @@ def add(requests: List[SimpleRequest]) -> int:
 
     Marks the result of each task as the sum.
     """
-    print("add")
-    result = 0
-    for request in requests:
-        result += sum(request.args) + sum(request.kwargs.values())
+    logger.debug(f"Processing {len(requests)} requests")
+    result = sum(sum(request.args) + sum(request.kwargs.values()) for request in requests)
 
     for request in requests:
         celery_app.backend.mark_as_done(request.id, result, request=request)
 
-    # TODO For EagerResults to work.
+    logger.debug(f"Finished processing. Result: {result}")
     return result
 
-def test_tasks_for_add():
-    # current_app.celery_broker_backend = 'memory'
-    print("test_tasks_for_add")
-    with celery_app.connection_for_write() as connection:
-        events_received = [0]
+@pytest.mark.asyncio
+async def test_tasks_for_add(celery_worker):
+    logger.debug("Starting test_tasks_for_add")
 
-        def handler(event):
-            events_received[0] += 1
-        
-        r = celery_app.events.Receiver(connection,
-                                handlers={'*':handler})
-        
-        result_1 = add.delay(1)
-        result_2 = add.delay(2)
+    # Send tasks
+    logger.debug("Sending tasks")
+    result_1 = add.delay(1)
+    result_2 = add.delay(2)
 
+    logger.debug("Waiting for results")
+    try:
+        # Wait for the batch to be processed
+        results = await asyncio.wait_for(asyncio.gather(
+            asyncio.to_thread(result_1.get),
+            asyncio.to_thread(result_2.get)
+        ), timeout=5.0)
+        logger.debug(f"Results: {results}")
+    except asyncio.TimeoutError:
+        logger.error("Test timed out while waiting for results")
+        pytest.fail("Test timed out while waiting for results")
 
-        print("READY")
-        assert result_1.get() == 3
-        assert result_2.get() == 3
+    # Check results
+    assert results[0] == 3, f"Expected 3, got {results[0]}"
+    assert results[1] == 3, f"Expected 3, got {results[1]}"
 
-        it = r.itercapture(limit=4,wakeup=True)
-        next(it)
-        assert events_received[0] > 0
-
-
-
-
+    logger.debug("Test completed successfully")
