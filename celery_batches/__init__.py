@@ -260,16 +260,15 @@ class Batches(Task):
 
             signals.task_received.send(sender=consumer, request=req)
 
-            signals.task_received.send(sender=consumer, request=request)
             if task_sends_events:
                 send_event(
                     'task-received',
-                    uuid=request.id, name=request.name,
-                    args=request.argsrepr, kwargs=request.kwargsrepr,
-                    root_id=request.root_id, parent_id=request.parent_id,
-                    retries=request.request_dict.get('retries', 0),
-                    eta=request.eta and request.eta.isoformat(),
-                    expires=request.expires and request.expires.isoformat(),
+                    uuid=req.id, name=req.name,
+                    args=req.argsrepr, kwargs=req.kwargsrepr,
+                    root_id=req.root_id, parent_id=req.parent_id,
+                    retries=req.request_dict.get('retries', 0),
+                    eta=req.eta and request.eta.isoformat(),
+                    expires=req.expires and req.expires.isoformat(),
                 )
 
             if self._tref is None:  # first request starts flush timer.
@@ -384,7 +383,7 @@ class Batches(Task):
                 runtime = 0
                 if type(result) == int:
                     runtime = result
-                request.send_event('task-succeeded',result=None, runtime=runtime )
+                request.send_event('task-succeeded', result=None, runtime=runtime )
         return self._pool.apply_async(
             apply_batches_task,
             (self, serializable_requests, 0, None),
