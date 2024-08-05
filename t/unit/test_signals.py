@@ -1,5 +1,5 @@
 from unittest.mock import DEFAULT, patch
-from typing import Any, Dict, List, Optional, Generator
+from typing import Any, List, Optional, Generator
 
 from celery_batches import Batches, SimpleRequest  # type: ignore
 from celery_batches.trace import apply_batches_task  # type: ignore
@@ -89,25 +89,29 @@ def setup_signal_receivers() -> Generator[None, None, None]:
     signals.task_revoked.disconnect(dummy_receiver)
 
 
-def test_task_prerun_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+def test_task_prerun_signal(batch_task: TestBatchTask,
+                            simple_request: SimpleRequest) -> None:
     with patch("celery_batches.trace.send_prerun") as mock_send:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         mock_send.assert_called_once()
 
 
-def test_task_postrun_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+def test_task_postrun_signal(batch_task: TestBatchTask,
+                             simple_request: SimpleRequest) -> None:
     with patch("celery_batches.trace.send_postrun") as mock_send:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         mock_send.assert_called_once()
 
 
-def test_task_success_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+def test_task_success_signal(batch_task: TestBatchTask,
+                             simple_request: SimpleRequest) -> None:
     with patch("celery_batches.trace.send_success") as mock_send:
         apply_batches_task(batch_task, ([simple_request],), 0, None)
         mock_send.assert_called_once()
 
 
-def test_task_failure_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+def test_task_failure_signal(batch_task: TestBatchTask,
+                             simple_request: SimpleRequest) -> None:
     def failing_run(*args: Any, **kwargs: Any) -> None:
         raise ValueError("Test exception")
 
@@ -118,7 +122,8 @@ def test_task_failure_signal(batch_task: TestBatchTask, simple_request: SimpleRe
         mock_send.assert_called_once()
 
 
-def test_task_revoked_signal(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+def test_task_revoked_signal(batch_task: TestBatchTask,
+                             simple_request: SimpleRequest) -> None:
     def revoking_run(*args: Any, **kwargs: Any) -> None:
         batch_task.request.state = "REVOKED"
         return []  # Changed from raise NoReturn to return
@@ -130,7 +135,8 @@ def test_task_revoked_signal(batch_task: TestBatchTask, simple_request: SimpleRe
         mock_send.assert_called_once()
 
 
-def test_all_signals_sent(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+def test_all_signals_sent(batch_task: TestBatchTask,
+                          simple_request: SimpleRequest) -> None:
     with patch.multiple(
         "celery_batches.trace",
         send_prerun=DEFAULT,
@@ -142,7 +148,8 @@ def test_all_signals_sent(batch_task: TestBatchTask, simple_request: SimpleReque
             mock.assert_called_once()
 
 
-def test_failure_signals_sent(batch_task: TestBatchTask, simple_request: SimpleRequest) -> None:
+def test_failure_signals_sent(batch_task: TestBatchTask,
+                              simple_request: SimpleRequest) -> None:
     def failing_run(*args: Any, **kwargs: Any) -> None:
         raise ValueError("Test exception")
 

@@ -40,7 +40,8 @@ def add(requests: List[SimpleRequest]) -> int:
     """
     logger.debug(f"Processing {len(requests)} requests")
     result = int(sum(
-        sum(int(arg) for arg in request.args) + sum(int(value) for value in request.kwargs.values())
+        sum(int(arg) for arg in request.args)
+        + sum(int(value) for value in request.kwargs.values())
         for request in requests
     ))
 
