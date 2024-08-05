@@ -1,11 +1,11 @@
+from typing import Any, Generator, List, Optional
 from unittest.mock import DEFAULT, patch
-from typing import Any, List, Optional, Generator
 
-from celery_batches import Batches, SimpleRequest  # type: ignore
-from celery_batches.trace import apply_batches_task  # type: ignore
+from celery_batches import Batches, SimpleRequest
+from celery_batches.trace import apply_batches_task
 
-from celery import signals  # type: ignore
-from celery.utils.collections import AttributeDict  # type: ignore
+from celery import signals
+from celery.utils.collections import AttributeDict
 
 import pytest
 
