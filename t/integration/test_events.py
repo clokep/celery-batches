@@ -39,11 +39,13 @@ def add(requests: List[SimpleRequest]) -> int:
     Marks the result of each task as the sum.
     """
     logger.debug(f"Processing {len(requests)} requests")
-    result = int(sum(
-        sum(int(arg) for arg in request.args)
-        + sum(int(value) for value in request.kwargs.values())
-        for request in requests
-    ))
+    result = int(
+        sum(
+            sum(int(arg) for arg in request.args)
+            + sum(int(value) for value in request.kwargs.values())
+            for request in requests
+        )
+    )
 
     for request in requests:
         celery_app.backend.mark_as_done(request.id, result, request=request)
