@@ -68,7 +68,8 @@ async def test_tasks_for_add(celery_worker: Any) -> None:
         # Wait for the batch to be processed
         results = await asyncio.wait_for(
             asyncio.gather(
-                asyncio.to_thread(result_1.get), asyncio.to_thread(result_2.get)
+                asyncio.get_event_loop().run_in_executor(None, result_1.get),
+                asyncio.get_event_loop().run_in_executor(None, result_2.get),
             ),
             timeout=5.0,
         )
