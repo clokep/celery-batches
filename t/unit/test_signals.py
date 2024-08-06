@@ -129,7 +129,7 @@ def test_task_failure_signal(
 def test_task_revoked_signal(
     batch_task: TestBatchTask, simple_request: SimpleRequest
 ) -> None:
-    def revoking_run(*args: Any, **kwargs: Any) -> None:
+    def revoking_run(*args: Any, **kwargs: Any) -> List:
         batch_task.request.state = "REVOKED"
         return []  # Changed from raise NoReturn to return
 

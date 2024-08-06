@@ -7,7 +7,6 @@ from typing import (
     Collection,
     Dict,
     Iterable,
-    NoReturn,
     Optional,
     Set,
     Tuple,
@@ -185,7 +184,7 @@ class Batches(Task):
         self._tref: Optional[Timer] = None
         self._pool: BasePool = None
 
-    def run(self, *args: Any, **kwargs: Any) -> NoReturn:
+    def run(self, *args: Any, **kwargs: Any) -> list[str]:
         raise NotImplementedError("must implement run(requests)")
 
     def Strategy(self, task: "Batches", app: Celery, consumer: Consumer) -> Callable:

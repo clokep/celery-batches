@@ -68,7 +68,7 @@ def apply_batches_task(
 
         # -*- TRACE -*-
         try:
-            result = task.run(*args)
+            result = task(*args)
             state = (
                 REVOKED
                 if (hasattr(task.request, "state") and task.request.state == REVOKED)
