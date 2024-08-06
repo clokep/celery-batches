@@ -184,7 +184,7 @@ class Batches(Task):
         self._tref: Optional[Timer] = None
         self._pool: BasePool = None
 
-    def run(self, *args: Any, **kwargs: Any) -> list[str]:
+    def run(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError("must implement run(requests)")
 
     def Strategy(self, task: "Batches", app: Celery, consumer: Consumer) -> Callable:
