@@ -101,7 +101,9 @@ def test_flush_interval(celery_app: Celery, celery_worker: TestWorkController) -
     assert result.get() == 1
 
 
-def test_flush_interval_resets_counter(celery_app: Celery, celery_worker: TestWorkController) -> None:
+def test_flush_interval_resets_counter(
+    celery_app: Celery, celery_worker: TestWorkController
+) -> None:
     """Flush counter is reset after flush is triggered by interval."""
 
     if not celery_app.conf.broker_url.startswith("memory"):
