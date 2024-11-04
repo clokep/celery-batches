@@ -122,6 +122,8 @@ def test_flush_interval_resets_counter(
     # Run next task, it should not execute as counter was reset
     result2 = add.delay(2)
 
+    # The flush interval is 0.1 second, this is shorter.
+    sleep(0.01)
     _wait_for_ping()
 
     assert result2.state == states.PENDING
