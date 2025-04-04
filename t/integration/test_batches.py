@@ -109,7 +109,7 @@ def test_flush_interval_resets_counter(
     if not celery_app.conf.broker_url.startswith("memory"):
         raise pytest.skip("Flaky on live brokers")
 
-    result1 = add.delay(1)
+    result_1 = add.delay(1)
 
     # The flush interval is 0.1 second, this is longer.
     sleep(2)
@@ -117,16 +117,16 @@ def test_flush_interval_resets_counter(
     # Let the worker work.
     _wait_for_ping()
 
-    assert result1.get() == 1
+    assert result_1.get() == 1
 
     # Run next task, it should not execute as counter was reset
-    result2 = add.delay(2)
+    result_2 = add.delay(2)
 
     # The flush interval is 0.1 second, this is shorter.
     sleep(0.01)
     _wait_for_ping()
 
-    assert result2.state == states.PENDING
+    assert result_2.state == states.PENDING
 
 
 def test_flush_calls(celery_worker: TestWorkController) -> None:
