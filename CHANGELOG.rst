@@ -14,7 +14,10 @@ Improvements
 Maintenance
 -----------
 
+* Support Celery 5.5.
 * Drop support for Celery < 5.2. (`#92 <https://github.com/clokep/celery-batches/pull/92>`_)
+* Support Python 3.13.
+* Drop support for Python 3.8.
 
 
 0.9 (2024-06-03)
