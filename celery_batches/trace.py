@@ -5,6 +5,7 @@ errors are recorded, handlers are applied and so on.
 
 Mimics some of the functionality found in celery.app.trace.trace_task.
 """
+
 from typing import TYPE_CHECKING, Any, List, Tuple
 
 from celery import signals, states

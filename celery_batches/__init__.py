@@ -241,7 +241,7 @@ class Batches(Task):
                 else:
                     body, headers, decoded, utc = proto1_to_proto2(message, body)
 
-            request = Req(
+            req = Req(
                 message,
                 on_ack=ack,
                 on_reject=reject,
@@ -255,7 +255,9 @@ class Batches(Task):
                 utc=utc,
                 connection_errors=connection_errors,
             )
-            put_buffer(request)
+            put_buffer(req)
+
+            signals.task_received.send(sender=consumer, request=req)
 
             signals.task_received.send(sender=consumer, request=request)
             if task_sends_events:
@@ -358,6 +360,7 @@ class Batches(Task):
         if len(ready_requests) > 0:
             logger.debug("Batches: Ready buffer complete: %s", len(ready_requests))
             self.flush(ready_requests)
+            self._count = count(self._pending.qsize() + 1)
 
         if not ready_requests and self._pending.qsize() == 0:
             logger.debug("Batches: Canceling timer: Nothing in buffers.")

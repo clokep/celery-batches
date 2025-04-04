@@ -3,6 +3,47 @@
 Changelog
 #########
 
+next
+====
+
+Bugfixes
+--------
+
+* Fix installing resetting the count of pending tasks when flushing tasks due to
+  the flush interval being reached. (`#95 <https://github.com/clokep/celery-batches/pull/95>`_)
+
+Improvements
+------------
+
+* Improve documentation. (`#92 <https://github.com/clokep/celery-batches/pull/92>`_)
+
+Maintenance
+-----------
+
+* Support Celery 5.5.
+* Drop support for Celery < 5.2. (`#92 <https://github.com/clokep/celery-batches/pull/92>`_)
+* Support Python 3.13.
+* Drop support for Python 3.8.
+
+
+0.9 (2024-06-03)
+================
+
+Improvements
+------------
+
+* Call the task received signal for ``Batches`` task. (`#85 <https://github.com/clokep/celery-batches/pull/85>`_)
+
+Maintenance
+-----------
+
+* Limit test requirements to ``pytest-celery~=0.0.0`` for an incompatibility with 1.0.0.
+  (`#90 <https://github.com/clokep/celery-batches/pull/90>`_)
+* Bump black to 24.3.0. (`#86 <https://github.com/clokep/celery-batches/pull/86>`_)
+* Support Celery 5.4. (`#91 <https://github.com/clokep/celery-batches/pull/91>`_)
+* Support Python 3.12. (`#91 <https://github.com/clokep/celery-batches/pull/91>`_)
+
+
 0.8.1 (2023-06-27)
 ==================
 
@@ -33,6 +74,7 @@ Maintenance
 * Drop support for Celery < 5.0. (`#78 <https://github.com/clokep/celery-batches/pull/78>`_)
 * Support Python 3.11. (`#75 <https://github.com/clokep/celery-batches/pull/75>`_)
 * Drop support for Python 3.7. (`#77 <https://github.com/clokep/celery-batches/pull/77>`_)
+
 
 0.7 (2022-05-02)
 ================
