@@ -342,7 +342,7 @@ class Batches(Task):
         if len(ready_requests) > 0:
             logger.debug("Batches: Ready buffer complete: %s", len(ready_requests))
             self.flush(ready_requests)
-            self._count = count(1)
+            self._count = count(self._pending.qsize() + 1)
 
         if not ready_requests and self._pending.qsize() == 0:
             logger.debug("Batches: Canceling timer: Nothing in buffers.")
