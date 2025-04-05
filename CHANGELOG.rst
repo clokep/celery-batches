@@ -10,7 +10,8 @@ Bugfixes
 --------
 
 * Fix installing resetting the count of pending tasks when flushing tasks due to
-  the flush interval being reached. (`#95 <https://github.com/clokep/celery-batches/pull/95>`_)
+  the flush interval being reached. Contributed by `@FilipKarpinski <https://github.com/FilipKarpinski>`_.
+  (`#95 <https://github.com/clokep/celery-batches/pull/95>`_)
 
 Improvements
 ------------
@@ -20,10 +21,10 @@ Improvements
 Maintenance
 -----------
 
-* Support Celery 5.5.
+* Support Celery 5.5. (`#97 <https://github.com/clokep/celery-batches/pull/97>`_)
 * Drop support for Celery < 5.2. (`#92 <https://github.com/clokep/celery-batches/pull/92>`_)
-* Support Python 3.13.
-* Drop support for Python 3.8.
+* Support Python 3.13. (`#97 <https://github.com/clokep/celery-batches/pull/97>`_)
+* Drop support for Python 3.8. (`#97 <https://github.com/clokep/celery-batches/pull/97>`_)
 
 
 0.9 (2024-06-03)
