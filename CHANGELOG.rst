@@ -19,8 +19,8 @@ Maintenance
 Bugfixes
 --------
 
-* Fix installing resetting the count of pending tasks when flushing tasks due to
-  the flush interval being reached. Contributed by `@FilipKarpinski <https://github.com/FilipKarpinski>`_.
+* Fix resetting the count of pending tasks when flushing tasks due to the flush
+  interval being reached. Contributed by `@FilipKarpinski <https://github.com/FilipKarpinski>`_.
   (`#95 <https://github.com/clokep/celery-batches/pull/95>`_)
 
 Improvements
