@@ -3,6 +3,16 @@
 Changelog
 #########
 
+next
+====
+
+Maintenance
+-----------
+
+* Support Celery 5.6. (`#101 <https://github.com/clokep/celery-batches/pull/101>`_)
+* Support Python 3.14. (`#101 <https://github.com/clokep/celery-batches/pull/101>`_)
+
+
 0.10 (2025-04-04)
 =================
 
