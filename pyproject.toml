@@ -1,3 +1,42 @@
+[project]
+name = "celery-batches"
+license = "BSD-3-Clause"
+version = "0.10"
+description = "Experimental task class that buffers messages and processes them as a list."
+readme = "README.rst"
+requires-python = ">=3.9"
+dependencies = [
+    "celery>=5.0,<5.7",
+]
+authors = [
+    {name = "Patrick Cloke", email = "clokep@patrick.cloke.us" },
+]
+keywords = ["task", "job", "queue", "distributed", "messaging", "actor"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Topic :: System :: Distributed Computing",
+    "Topic :: Software Development :: Object Brokering",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Documentation = "https://celery-batches.readthedocs.io"
+Changelog = "https://github.com/clokep/celery-batches/blob/main/CHANGELOG.rst"
+Repository = "https://github.com/clokep/celery-batches"
+Funding = "https://github.com/sponsors/clokep"
+Issues = "https://github.com/clokep/celery-batches/issues"
+
 [build-system]
 requires = ["setuptools>=42.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
