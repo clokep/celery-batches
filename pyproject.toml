@@ -11,7 +11,7 @@ dependencies = [
 authors = [
     {name = "Patrick Cloke", email = "clokep@patrick.cloke.us" },
 ]
-keywords = ["task", "job", "queue", "distributed", "messaging", "actor"]
+keywords = ["task", "job", "queue", "distributed", "messaging", "actor", "celery"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Topic :: System :: Distributed Computing",
@@ -38,8 +38,11 @@ Funding = "https://github.com/sponsors/clokep"
 Issues = "https://github.com/clokep/celery-batches/issues"
 
 [build-system]
-requires = ["setuptools>=42.0.0", "wheel"]
+requires = ["setuptools>=77.0.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["celery_batches"]
 
 [tool.mypy]
 warn_unused_configs = true
