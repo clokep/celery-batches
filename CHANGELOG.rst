@@ -13,6 +13,9 @@ Maintenance
   (`#101 <https://github.com/clokep/celery-batches/pull/101>`_)
 * Support Python 3.14. Contributed by `@julienc91 <https://github.com/julienc91>`_.
   (`#101 <https://github.com/clokep/celery-batches/pull/101>`_)
+* Changed packaging to use setuptools declarative config in ``pyproject.toml``.
+  (`#101 <https://github.com/clokep/celery-batches/pull/101>`_,
+  `#103 <https://github.com/clokep/celery-batches/pull/103>`_)
 
 
 0.10 (2025-04-04)
