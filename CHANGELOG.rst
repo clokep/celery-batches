@@ -6,6 +6,17 @@ Changelog
 next
 ====
 
+Bugfixes
+--------
+
+* Re-arm the flush timer when the consumer (re)starts so workers keep flushing
+  batches after a broker reconnect. Previously the flush timer stayed bound to
+  the old event-loop hub, and -- when the broker prefetch was smaller than
+  ``flush_every`` -- the worker silently stopped flushing and wedged holding its
+  prefetched messages unacked until it was restarted.
+  (`#99 <https://github.com/clokep/celery-batches/issues/99>`_,
+  `#107 <https://github.com/clokep/celery-batches/issues/107>`_)
+
 Maintenance
 -----------
 

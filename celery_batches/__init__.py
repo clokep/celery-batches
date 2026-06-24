@@ -195,6 +195,25 @@ class Batches(Task):
         # the default strategy does.
         #
         # See Batches._do_flush for ETA handling.
+
+        # Strategy() runs every time the consumer (re)starts, including after a
+        # lost broker connection is re-established. The flush timer (self._tref)
+        # is bound to the consumer's event-loop hub and the buffered requests
+        # reference the consumer's channel, both of which are replaced on
+        # reconnect. Reset this per-consumer state so the next message re-arms
+        # the flush timer (see below) on the new hub. Without this, self._tref
+        # stays set, the timer is never re-armed, and -- when the broker prefetch
+        # is smaller than flush_every -- the worker silently stops flushing and
+        # wedges holding its prefetched messages unacked. Any buffered requests
+        # belong to the old connection and have been (or will be) redelivered by
+        # the broker, so they are dropped.
+        if self._tref is not None:
+            self._tref.cancel()
+        self._tref = None
+        self._buffer = Queue()
+        self._pending = Queue()
+        self._count = count(1)
+
         self._pool = consumer.pool
 
         hostname = consumer.hostname
