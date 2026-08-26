@@ -95,14 +95,18 @@ jobs:
         continue-on-error: true
 
   integration-tests:
-    name: "Integration tests"
+    name: "Integration tests (${{ matrix.broker }})"
     needs: lint
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        broker: [rabbitmq, redis]
 
     services:
       rabbitmq:
         image: rabbitmq
-        # Set health checks to wait until redis has started
+        # Set health checks to wait until rabbitmq has started
         options: >-
           --health-cmd "rabbitmq-diagnostics -q status"
           --health-interval 10s
@@ -137,6 +141,4 @@ jobs:
           python -m pip install --upgrade "tox"
 
       - name: "Run tox targets"
-        env:
-          TOX_SKIP_ENV: ".*unit.*|flake8"
-        run: "python -m tox"
+        run: "python -m tox -e 3.10-celery52-integration-${{ matrix.broker }}"
