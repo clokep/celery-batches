@@ -1,3 +1,4 @@
+from typing import Any, cast
 from unittest.mock import MagicMock
 
 from celery_batches import Batches
@@ -8,11 +9,12 @@ from celery import Celery
 def _make_batch_task() -> Batches:
     app = Celery("test_batches_strategy", set_as_current=False)
 
+    # Celery's task decorator is untyped, so it returns Any.
     @app.task(base=Batches, flush_every=2, flush_interval=10)
     def dummy(requests: list) -> None:
         return None
 
-    return dummy
+    return cast(Batches, dummy)
 
 
 def _mock_consumer() -> MagicMock:
@@ -30,8 +32,10 @@ def test_strategy_rearms_flush_timer_after_reconnect() -> None:
     """
     task = _make_batch_task()
 
-    # Simulate state left over from a previous (now dead) consumer.
-    stale_timer = MagicMock()
+    # Simulate state left over from a previous (now dead) consumer. The mock is
+    # typed as Any so that assigning it does not narrow ``_tref`` away from
+    # Optional, which would make the ``is None`` assertion below unreachable.
+    stale_timer: Any = MagicMock()
     task._tref = stale_timer
     task._buffer.put(MagicMock())
     task._pending.put(MagicMock())
