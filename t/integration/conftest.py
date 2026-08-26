@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -9,7 +9,7 @@ TEST_BACKEND = os.environ.get("TEST_BACKEND", "cache+memory://")
 
 
 @pytest.fixture(scope="session", params=[1, 2])
-def celery_config(request: SubRequest) -> Dict[str, Any]:
+def celery_config(request: SubRequest) -> dict[str, Any]:
     return {
         "broker_url": TEST_BROKER,
         "result_backend": TEST_BACKEND,

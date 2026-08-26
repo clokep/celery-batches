@@ -1,18 +1,8 @@
+from collections.abc import Callable, Collection, Iterable
 from itertools import count, filterfalse, tee
 from queue import Empty, Queue
 from time import monotonic
-from typing import (
-    Any,
-    Callable,
-    Collection,
-    Dict,
-    Iterable,
-    NoReturn,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-)
+from typing import Any, NoReturn, TypeVar
 
 from celery_batches.trace import apply_batches_task
 
@@ -67,7 +57,7 @@ def consume_queue(queue: "Queue[T]") -> Iterable[T]:
 
 def partition(
     predicate: Callable[[T], bool], iterable: Iterable[T]
-) -> Tuple[Iterable[T], Iterable[T]]:
+) -> tuple[Iterable[T], Iterable[T]]:
     "Use a predicate to partition entries into false entries and true entries"
     t1, t2 = tee(iterable)
     return filterfalse(predicate, t1), filter(predicate, t2)
@@ -91,10 +81,10 @@ class SimpleRequest:
     name = None
 
     #: positional arguments
-    args: Tuple[Any, ...] = ()
+    args: tuple[Any, ...] = ()
 
     #: keyword arguments
-    kwargs: Dict[Any, Any] = {}
+    kwargs: dict[Any, Any] = {}
 
     #: message delivery information.
     delivery_info = None
@@ -112,7 +102,7 @@ class SimpleRequest:
     correlation_id = None
 
     #: includes all of the original request headers
-    request_dict: Optional[Dict[str, Any]] = {}
+    request_dict: dict[str, Any] | None = {}
 
     #: TODO
     chord = None
@@ -121,14 +111,14 @@ class SimpleRequest:
         self,
         id: str,
         name: str,
-        args: Tuple[Any, ...],
-        kwargs: Dict[Any, Any],
+        args: tuple[Any, ...],
+        kwargs: dict[Any, Any],
         delivery_info: dict,
         hostname: str,
         ignore_result: bool,
-        reply_to: Optional[str],
-        correlation_id: Optional[str],
-        request_dict: Optional[Dict[str, Any]],
+        reply_to: str | None,
+        correlation_id: str | None,
+        request_dict: dict[str, Any] | None,
     ):
         self.id = id
         self.name = name
@@ -182,7 +172,7 @@ class Batches(Task):
         self._buffer: Queue[Request] = Queue()
         self._pending: Queue[Request] = Queue()
         self._count = count(1)
-        self._tref: Optional[Timer] = None
+        self._tref: Timer | None = None
         self._pool: BasePool = None
 
     def run(self, *args: Any, **kwargs: Any) -> NoReturn:
@@ -217,10 +207,10 @@ class Batches(Task):
 
         def task_message_handler(
             message: Message,
-            body: Optional[Dict[str, Any]],
+            body: dict[str, Any] | None,
             ack: promise,
             reject: promise,
-            callbacks: Set,
+            callbacks: set,
             **kw: Any,
         ) -> None:
             if body is None and "args" not in message.payload:
@@ -266,8 +256,8 @@ class Batches(Task):
 
     def apply(
         self,
-        args: Optional[Tuple[Any, ...]] = None,
-        kwargs: Optional[dict] = None,
+        args: tuple[Any, ...] | None = None,
+        kwargs: dict | None = None,
         *_args: Any,
         **options: Any,
     ) -> Any:
@@ -360,7 +350,7 @@ class Batches(Task):
             for req in acks_early:
                 req.acknowledge()
 
-        def on_return(result: Optional[Any]) -> None:
+        def on_return(result: Any | None) -> None:
             for req in acks_late:
                 req.acknowledge()
 

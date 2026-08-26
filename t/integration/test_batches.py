@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from time import sleep
-from typing import Any, Callable, List, Optional, Union
+from typing import Any
 
 from celery_batches import Batches, SimpleRequest
 
@@ -23,7 +24,7 @@ class SignalCounter:
         self,
         signal: Signal,
         expected_calls: int,
-        callback: Optional[Callable[..., None]] = None,
+        callback: Callable[..., None] | None = None,
     ):
         self.signal = signal
         signal.connect(self)
@@ -31,7 +32,7 @@ class SignalCounter:
         self.expected_calls = expected_calls
         self.callback = callback
 
-    def __call__(self, sender: Union[Task, str, Consumer], **kwargs: Any) -> None:
+    def __call__(self, sender: Task | str | Consumer, **kwargs: Any) -> None:
         if isinstance(sender, Task):
             task_name = sender.name
         elif isinstance(sender, Consumer):
@@ -221,7 +222,7 @@ def test_signals(celery_app: Celery, celery_worker: TestWorkController) -> None:
 def test_current_task(celery_app: Celery, celery_worker: TestWorkController) -> None:
     """Ensure the current_task is properly set when running the task."""
 
-    def signal(sender: Union[Task, str], **kwargs: Any) -> None:
+    def signal(sender: Task | str, **kwargs: Any) -> None:
         assert celery_app.current_task.name == "t.integration.tasks.add"
 
     counter = SignalCounter(signals.task_prerun, 1, signal)
@@ -252,7 +253,7 @@ def test_acks_early(celery_app: Celery, celery_worker: TestWorkController) -> No
     @celery_app.task(
         base=Batches, flush_every=2, flush_interval=0.1, Request=AckRequest
     )
-    def acks(requests: List[SimpleRequest]) -> None:
+    def acks(requests: list[SimpleRequest]) -> None:
         # The tasks are acked before running.
         assert acked == [result_1.id, result_2.id]
 
@@ -291,7 +292,7 @@ def test_acks_late(celery_app: Celery, celery_worker: TestWorkController) -> Non
         flush_interval=0.1,
         Request=AckRequest,
     )
-    def acks(requests: List[SimpleRequest]) -> None:
+    def acks(requests: list[SimpleRequest]) -> None:
         # When the tasks are running, nothing is acked.
         assert acked == []
 

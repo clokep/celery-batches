@@ -10,6 +10,7 @@ Maintenance
 -----------
 
 * Drop support for Python 3.9 (`#106 <https://github.com/clokep/celery-batches/pull/106>`_)
+* Update GitHub Actions and dev dependencies (flake8, mypy, isort, pyupgrade, black).
 
 2026-01-16
 ==========

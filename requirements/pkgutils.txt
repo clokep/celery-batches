@@ -1,5 +1,5 @@
-pyupgrade==2.31.1
-flake8==4.0.1
-isort==5.10.1
-black==24.3.0
-mypy==0.942
+pyupgrade==3.21.2
+flake8==7.3.0
+isort==5.13.2
+black==26.5.1
+mypy==2.3.1

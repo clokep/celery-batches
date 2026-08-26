@@ -1,5 +1,3 @@
-from typing import List
-
 from celery_batches import Batches, SimpleRequest
 
 from celery import shared_task
@@ -9,7 +7,7 @@ logger = get_task_logger(__name__)
 
 
 @shared_task(base=Batches, flush_every=2, flush_interval=0.1)
-def add(requests: List[SimpleRequest]) -> int:
+def add(requests: list[SimpleRequest]) -> int:
     """
     Add the first argument of each task.
 
@@ -29,7 +27,7 @@ def add(requests: List[SimpleRequest]) -> int:
 
 
 @shared_task(base=Batches, flush_every=2, flush_interval=0.1)
-def cumadd(requests: List[SimpleRequest]) -> None:
+def cumadd(requests: list[SimpleRequest]) -> None:
     """
     Calculate the cumulative sum of the first argument of each task.
 
