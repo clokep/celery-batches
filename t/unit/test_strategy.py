@@ -1,4 +1,3 @@
-from itertools import count
 from unittest.mock import MagicMock
 
 from celery_batches import Batches
