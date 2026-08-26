@@ -185,6 +185,17 @@ class Batches(Task):
         # the default strategy does.
         #
         # See Batches._do_flush for ETA handling.
+
+        # Strategy() runs every time the consumer (re)starts, including after a
+        # lost broker connection is re-established. Reset the per-consumer state
+        # so that the next message properly re-arms the flush timer.
+        if self._tref is not None:
+            self._tref.cancel()
+        self._tref = None
+        self._buffer = Queue()
+        self._pending = Queue()
+        self._count = count(1)
+
         self._pool = consumer.pool
 
         hostname = consumer.hostname

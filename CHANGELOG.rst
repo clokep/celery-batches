@@ -6,6 +6,12 @@ Changelog
 next
 ====
 
+Bugfixes
+--------
+
+* Reset per-consumer state to fix the hangs after a consumer restart.
+  (`#107 <https://github.com/clokep/celery-batches/issues/107>`_)
+
 Maintenance
 -----------
 
