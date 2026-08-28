@@ -140,5 +140,27 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install --upgrade "tox"
 
+      - name: "Diagnose broker connectivity"
+        if: matrix.broker == 'rabbitmq'
+        run: |
+          echo "=== hostname ==="
+          hostname
+          echo "=== /etc/hosts ==="
+          cat /etc/hosts
+          echo "=== probe RabbitMQ service ports ==="
+          python - <<'PY'
+          import socket
+
+          targets = ["localhost", "127.0.0.1", "::1", "rabbitmq"]
+          for host in targets:
+              for addr in [5672, 15672]:
+                  try:
+                      s = socket.create_connection((host, addr), timeout=5)
+                      print(f"OK {host}:{addr} -> {s.getpeername()}")
+                      s.close()
+                  except Exception as e:
+                      print(f"FAIL {host}:{addr} -> {e!r}")
+          PY
+
       - name: "Run tox targets"
         run: "python -m tox -e 3.10-celery52-integration-${{ matrix.broker }}"
