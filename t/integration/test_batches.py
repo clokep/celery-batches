@@ -1,71 +1,17 @@
 from collections.abc import Callable
 from datetime import datetime, timedelta
 from time import sleep
-from typing import Any
-from unittest.mock import patch
 
 from celery_batches import Batches, SimpleRequest
 
-from celery import Celery, signals, states
-from celery.app.task import Task
-from celery.contrib.testing.tasks import ping
+from celery import Celery, states
 from celery.contrib.testing.worker import TestWorkController
-from celery.result import allow_join_result
-from celery.utils.dispatch import Signal
-from celery.worker.consumer.consumer import Consumer
 from celery.worker.request import Request
 
 import pytest
 
-from .tasks import add, cumadd, failing
-
-
-class SignalCounter:
-    def __init__(
-        self,
-        signal: Signal,
-        expected_calls: int,
-        callback: Callable[..., None] | None = None,
-    ):
-        self.signal = signal
-        signal.connect(self)
-        self.calls = 0
-        self.expected_calls = expected_calls
-        self.callback = callback
-
-    def __call__(self, sender: Task | str | Consumer, **kwargs: Any) -> None:
-        if isinstance(sender, Task):
-            task_name = sender.name
-        elif isinstance(sender, Consumer):
-            assert self.signal == signals.task_received
-            task_name = kwargs["request"].name
-        else:
-            task_name = sender
-
-        # Ignore pings, those are used to ensure the worker processes tasks.
-        if task_name == "celery.ping":
-            return
-
-        self.calls += 1
-
-        # Call the "real" signal, if necessary.
-        if self.callback:
-            self.callback(sender, **kwargs)
-
-    def assert_calls(self) -> None:
-        assert (
-            self.calls == self.expected_calls
-        ), f"Signal {self.signal.name} called incorrect number of times."
-
-
-def _wait_for_ping(ping_task_timeout: float = 10.0) -> None:
-    """
-    Wait for the celery worker to respond to a ping.
-
-    This should ensure that any other running tasks are done.
-    """
-    with allow_join_result():
-        assert ping.delay().get(timeout=ping_task_timeout) == "pong"
+from . import _wait_for_ping
+from .tasks import add, cumadd
 
 
 @pytest.mark.usefixtures("depends_on_current_app")
@@ -177,165 +123,6 @@ def test_result(celery_worker: TestWorkController) -> None:
 
     assert result_1.get(timeout=3) == 1
     assert result_2.get(timeout=3) == 3
-
-
-def test_signals(celery_app: Celery, celery_worker: TestWorkController) -> None:
-    """Ensure that Celery signals run for the batch task."""
-    # Configure a SignalCounter for each task signal.
-    checks = (
-        # Each task request gets published separately.
-        (signals.before_task_publish, 2),
-        (signals.after_task_publish, 2),
-        (signals.task_sent, 2),
-        (signals.task_received, 2),
-        # The Batch task only runs a single time.
-        (signals.task_prerun, 1),
-        (signals.task_postrun, 1),
-        (signals.task_success, 1),
-        # Other task signals are not implemented.
-        (signals.task_retry, 0),
-        (signals.task_failure, 0),
-        (signals.task_revoked, 0),
-        (signals.task_internal_error, 0),
-        (signals.task_unknown, 0),
-        (signals.task_rejected, 0),
-    )
-    signal_counters = []
-    for sig, expected_count in checks:
-        counter = SignalCounter(sig, expected_count)
-        signal_counters.append(counter)
-
-    # The batch runs after 2 task calls.
-    result_1 = add.delay(1)
-    result_2 = add.delay(3)
-
-    # Let the worker work.
-    _wait_for_ping()
-
-    # Should still have the correct result.
-    assert result_1.get() == 4
-    assert result_2.get() == 4
-
-    for counter in signal_counters:
-        counter.assert_calls()
-
-
-def test_failure_signal(celery_app: Celery, celery_worker: TestWorkController) -> None:
-    """Ensure that the task_failure signal fires when a batch task fails."""
-    checks = (
-        (signals.task_prerun, 1),
-        (signals.task_postrun, 1),
-        (signals.task_failure, 1),
-        (signals.task_success, 0),
-    )
-    signal_counters = []
-    for sig, expected_count in checks:
-        counter = SignalCounter(sig, expected_count)
-        signal_counters.append(counter)
-
-    # The batch runs after 2 task calls.
-    failing.delay()
-    failing.delay()
-
-    # Let the worker work.
-    _wait_for_ping()
-
-    for counter in signal_counters:
-        counter.assert_calls()
-
-
-def filter_events(events: Any, type: str, uuids: set[str]) -> list:
-    # publish is called with (event type, event fields as a dict, <other things>.
-    #
-    # Note that this is called with _other_ events we don't care about (e.g. the
-    # ping events), so filter by UUID.
-    return [
-        {"type": e[0][0], **e[0][1]}
-        for e in events
-        if e[0][0] == type and e[0][1].get("uuid") in uuids
-    ]
-
-
-def test_events_on_success(
-    celery_app: Celery, celery_worker: TestWorkController
-) -> None:
-    """Ensure that task-started and task-succeeded events are sent
-    per task in a successful batch."""
-    with patch.object(celery_worker.consumer.event_dispatcher, "publish") as publish:
-        result_1 = add.delay(1)
-        result_2 = add.delay(3)
-
-        _wait_for_ping()
-
-        assert result_1.get() == 4
-        assert result_2.get() == 4
-
-    task_ids = {result_1.id, result_2.id}
-    received = filter_events(publish.call_args_list, "task-received", task_ids)
-    started = filter_events(publish.call_args_list, "task-started", task_ids)
-    succeeded = filter_events(publish.call_args_list, "task-succeeded", task_ids)
-    failed = filter_events(publish.call_args_list, "task-failed", task_ids)
-
-    # One event per task in the batch.
-    assert len(received) == 2, f"Expected 2 task-received events, got {len(received)}"
-    assert len(started) == 2, f"Expected 2 task-started events, got {len(started)}"
-    assert (
-        len(succeeded) == 2
-    ), f"Expected 2 task-succeeded events, got {len(succeeded)}"
-    assert len(failed) == 0, f"Expected 0 task-failed events, got {len(failed)}"
-
-    # The succeeded events should include a runtime.
-    for event in succeeded:
-        assert "runtime" in event
-        assert event["runtime"] >= 0
-
-
-def test_events_on_failure(
-    celery_app: Celery, celery_worker: TestWorkController
-) -> None:
-    """Ensure that task-started and task-failed events are sent
-    per task in a failing batch."""
-    with patch.object(celery_worker.consumer.event_dispatcher, "publish") as publish:
-        result_1 = failing.delay()
-        result_2 = failing.delay()
-
-        _wait_for_ping()
-
-    task_ids = {result_1.id, result_2.id}
-    received = filter_events(publish.call_args_list, "task-received", task_ids)
-    started = filter_events(publish.call_args_list, "task-started", task_ids)
-    succeeded = filter_events(publish.call_args_list, "task-succeeded", task_ids)
-    failed = filter_events(publish.call_args_list, "task-failed", task_ids)
-
-    # One event per task in the batch.
-    assert len(received) == 2, f"Expected 2 task-received events, got {len(received)}"
-    assert len(started) == 2, f"Expected 2 task-started events, got {len(started)}"
-    assert (
-        len(succeeded) == 0
-    ), f"Expected 0 task-succeeded events, got {len(succeeded)}"
-    assert len(failed) == 2, f"Expected 2 task-failed events, got {len(failed)}"
-
-
-def test_current_task(celery_app: Celery, celery_worker: TestWorkController) -> None:
-    """Ensure the current_task is properly set when running the task."""
-
-    def signal(sender: Task | str, **kwargs: Any) -> None:
-        assert celery_app.current_task.name == "t.integration.tasks.add"
-
-    counter = SignalCounter(signals.task_prerun, 1, signal)
-
-    # The batch runs after 2 task calls.
-    result_1 = add.delay(1)
-    result_2 = add.delay(3)
-
-    # Let the worker work.
-    _wait_for_ping()
-
-    # Should still have the correct result.
-    assert result_1.get() == 4
-    assert result_2.get() == 4
-
-    counter.assert_calls()
 
 
 def test_acks_early(celery_app: Celery, celery_worker: TestWorkController) -> None:
