@@ -1,5 +1,4 @@
 from typing import Any
-from unittest.mock import patch
 
 from celery import Celery
 from celery.contrib.testing.worker import TestWorkController
@@ -20,25 +19,22 @@ def filter_events(events: Any, type: str, uuids: set[str]) -> list:
     ]
 
 
-def test_events_on_success(
-    celery_app: Celery, celery_worker: TestWorkController
-) -> None:
+def test_events_on_success(capture_events: Any) -> None:
     """Ensure that task-started and task-succeeded events are sent
     per task in a successful batch."""
-    with patch.object(celery_worker.consumer.event_dispatcher, "publish") as publish:
-        result_1 = add.delay(1)
-        result_2 = add.delay(3)
+    result_1 = add.delay(1)
+    result_2 = add.delay(3)
 
-        _wait_for_ping()
+    _wait_for_ping()
 
-        assert result_1.get() == 4
-        assert result_2.get() == 4
+    assert result_1.get() == 4
+    assert result_2.get() == 4
 
     task_ids = {result_1.id, result_2.id}
-    received = filter_events(publish.call_args_list, "task-received", task_ids)
-    started = filter_events(publish.call_args_list, "task-started", task_ids)
-    succeeded = filter_events(publish.call_args_list, "task-succeeded", task_ids)
-    failed = filter_events(publish.call_args_list, "task-failed", task_ids)
+    received = filter_events(capture_events.call_args_list, "task-received", task_ids)
+    started = filter_events(capture_events.call_args_list, "task-started", task_ids)
+    succeeded = filter_events(capture_events.call_args_list, "task-succeeded", task_ids)
+    failed = filter_events(capture_events.call_args_list, "task-failed", task_ids)
 
     # One event per task in the batch.
     assert len(received) == 2, f"Expected 2 task-received events, got {len(received)}"
@@ -54,22 +50,19 @@ def test_events_on_success(
         assert event["runtime"] >= 0
 
 
-def test_events_on_failure(
-    celery_app: Celery, celery_worker: TestWorkController
-) -> None:
+def test_events_on_failure(capture_events: Any) -> None:
     """Ensure that task-started and task-failed events are sent
     per task in a failing batch."""
-    with patch.object(celery_worker.consumer.event_dispatcher, "publish") as publish:
-        result_1 = failing.delay()
-        result_2 = failing.delay()
+    result_1 = failing.delay()
+    result_2 = failing.delay()
 
-        _wait_for_ping()
+    _wait_for_ping()
 
     task_ids = {result_1.id, result_2.id}
-    received = filter_events(publish.call_args_list, "task-received", task_ids)
-    started = filter_events(publish.call_args_list, "task-started", task_ids)
-    succeeded = filter_events(publish.call_args_list, "task-succeeded", task_ids)
-    failed = filter_events(publish.call_args_list, "task-failed", task_ids)
+    received = filter_events(capture_events.call_args_list, "task-received", task_ids)
+    started = filter_events(capture_events.call_args_list, "task-started", task_ids)
+    succeeded = filter_events(capture_events.call_args_list, "task-succeeded", task_ids)
+    failed = filter_events(capture_events.call_args_list, "task-failed", task_ids)
 
     # One event per task in the batch.
     assert len(received) == 2, f"Expected 2 task-received events, got {len(received)}"
