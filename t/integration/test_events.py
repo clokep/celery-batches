@@ -1,8 +1,5 @@
 from typing import Any
 
-from celery import Celery
-from celery.contrib.testing.worker import TestWorkController
-
 from . import _wait_for_ping
 from .tasks import add, failing
 

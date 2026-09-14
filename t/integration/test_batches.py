@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from datetime import datetime, timedelta
 from time import sleep
 

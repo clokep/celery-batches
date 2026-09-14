@@ -8,7 +8,7 @@ from celery.utils.dispatch import Signal
 from celery.worker.consumer.consumer import Consumer
 
 from . import _wait_for_ping
-from .tasks import add, cumadd, failing
+from .tasks import add, failing
 
 
 class SignalCounter:
