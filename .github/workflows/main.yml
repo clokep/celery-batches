@@ -85,7 +85,7 @@ jobs:
 
       - name: "Run tox targets for ${{ matrix.python-version }}"
         env:
-          TOX_SKIP_ENV: ".*celerymaster.*|.*integration.*"
+          TOX_SKIP_ENV: ".*celerymain.*|.*integration.*"
         run: "python -m tox"
 
       - name: "Run tox targets for ${{ matrix.python-version }} for celery master"

@@ -82,4 +82,5 @@ tasks are in the queue.
    examples
    api
    how_it_works
+   monitoring
    history

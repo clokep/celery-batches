@@ -6,6 +6,11 @@ Changelog
 next
 ====
 
+Improvements
+------------
+
+* Add support for task signals (`#104 <https://github.com/clokep/celery-batches/pull/104>`_)
+
 Bugfixes
 --------
 

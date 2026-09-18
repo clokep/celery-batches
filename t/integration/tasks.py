@@ -27,6 +27,12 @@ def add(requests: list[SimpleRequest]) -> int:
 
 
 @shared_task(base=Batches, flush_every=2, flush_interval=0.1)
+def failing(requests: list[SimpleRequest]) -> None:
+    """A batch task that always raises an exception."""
+    raise RuntimeError("batch task failed")
+
+
+@shared_task(base=Batches, flush_every=2, flush_interval=0.1)
 def cumadd(requests: list[SimpleRequest]) -> None:
     """
     Calculate the cumulative sum of the first argument of each task.

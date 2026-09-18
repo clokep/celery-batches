@@ -7,7 +7,7 @@ from typing import Any, NoReturn, TypeVar
 from celery_batches.trace import apply_batches_task
 
 from celery import VERSION as CELERY_VERSION
-from celery import signals
+from celery import signals, states
 from celery.app import Celery
 from celery.app.task import Task
 from celery.concurrency.base import BasePool
@@ -202,6 +202,9 @@ class Batches(Task):
         connection_errors = consumer.connection_errors
 
         eventer = consumer.event_dispatcher
+        events = eventer and eventer.enabled
+        send_event = eventer and eventer.send
+        task_sends_events = events and task.send_events
 
         Request = symbol_by_name(task.Request)
         # Celery 5.1 added the app argument to create_request_cls.
@@ -256,6 +259,19 @@ class Batches(Task):
             put_buffer(req)
 
             signals.task_received.send(sender=consumer, request=req)
+            if task_sends_events:
+                send_event(
+                    "task-received",
+                    uuid=req.id,
+                    name=req.name,
+                    args=req.argsrepr,
+                    kwargs=req.kwargsrepr,
+                    root_id=req.root_id,
+                    parent_id=req.parent_id,
+                    retries=req.request_dict.get("retries", 0),
+                    eta=req.eta and req.eta.isoformat(),
+                    expires=req.expires and req.expires.isoformat(),
+                )
 
             if self._tref is None:  # first request starts flush timer.
                 self._tref = timer.call_repeatedly(self.flush_interval, flush_buffer)
@@ -361,7 +377,22 @@ class Batches(Task):
             for req in acks_early:
                 req.acknowledge()
 
+            for request in requests:
+                request.send_event("task-started")
+
         def on_return(result: Any | None) -> None:
+            if result is not None:
+                retval, state, runtime = result
+
+                for request in requests:
+                    if state == states.SUCCESS:
+                        request.send_event(
+                            "task-succeeded",
+                            runtime=runtime,
+                            result=repr(retval),
+                        )
+                    elif state == states.FAILURE:
+                        request.send_event("task-failed")
             for req in acks_late:
                 req.acknowledge()
 
