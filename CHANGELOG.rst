@@ -20,9 +20,9 @@ Bugfixes
 Maintenance
 -----------
 
-* Support Python 3.15. (`#XXX <https://github.com/clokep/celery-batches/pull/XXX>`_)
+* Support Python 3.15. (`#111 <https://github.com/clokep/celery-batches/pull/111>`_)
 * Drop support for Python 3.9 and 3.10. (`#106 <https://github.com/clokep/celery-batches/pull/106>`_,
-  #XXX <https://github.com/clokep/celery-batches/pull/XXX>`_)
+  #111 <https://github.com/clokep/celery-batches/pull/111>`_)
 * Update GitHub Actions and dev dependencies (flake8, mypy, isort, pyupgrade, black).
   (`#110 <https://github.com/clokep/celery-batches/pull/110>`_)
 
