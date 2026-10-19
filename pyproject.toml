@@ -6,7 +6,7 @@ description = "Experimental task class that buffers messages and processes them 
 readme = "README.rst"
 requires-python = ">=3.11"
 dependencies = [
-    "celery>=5.0,<5.7",
+    "celery>=5.0,<5.8",
 ]
 authors = [
     {name = "Patrick Cloke", email = "clokep@patrick.cloke.us" },
