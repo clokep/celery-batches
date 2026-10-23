@@ -38,5 +38,5 @@ def capture_events(celery_worker: TestWorkController) -> Any:
     dispatcher = celery_worker.consumer.event_dispatcher  # type: ignore[attr-defined]
     if dispatcher and dispatcher.buffer_group:
         dispatcher.buffer_group = frozenset()
-    with patch.object(dispatcher, "publish") as publish:
+    with patch.object(dispatcher, "_publish") as publish:
         yield publish
