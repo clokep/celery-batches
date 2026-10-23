@@ -203,6 +203,8 @@ class Batches(Task):
 
         eventer = consumer.event_dispatcher
         events = eventer and eventer.enabled
+        print(eventer)
+        print(eventer.send)
         send_event = eventer and eventer.send
         task_sends_events = events and task.send_events
 
