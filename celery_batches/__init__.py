@@ -152,8 +152,6 @@ class SimpleRequest:
 
 
 class Batches(Task):
-    abstract = True
-
     # Disable typing since the signature of batch tasks take only a single item
     # (the list of SimpleRequest objects), but when calling it it should be
     # possible to provide more arguments.
