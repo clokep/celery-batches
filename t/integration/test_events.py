@@ -4,15 +4,15 @@ from . import _wait_for_ping
 from .tasks import add, failing
 
 
-def filter_events(events: Any, type: str, uuids: set[str]) -> list:
-    # publish is called with (event type, event fields as a dict, <other things>.
+def filter_events(calls: Any, type: str, uuids: set[str]) -> list:
+    # _publish is called with (event, producer, ... other stuff).
     #
     # Note that this is called with _other_ events we don't care about (e.g. the
     # ping events), so filter by UUID.
     return [
-        {"type": e[0][0], **e[0][1]}
-        for e in events
-        if e[0][0] == type and e[0][1].get("uuid") in uuids
+        args[0]
+        for args, kwargs in calls
+        if args[0]["type"] == type and args[0].get("uuid") in uuids
     ]
 
 
