@@ -3,8 +3,8 @@
 Changelog
 #########
 
-next
-====
+0.12 (2026-11-18)
+=================
 
 Improvements
 ------------
@@ -27,8 +27,8 @@ Maintenance
 * Update GitHub Actions and dev dependencies (flake8, mypy, isort, pyupgrade, black).
   (`#110 <https://github.com/clokep/celery-batches/pull/110>`_)
 
-2026-01-16
-==========
+0.11 (2026-01-16)
+===============
 
 Maintenance
 -----------
