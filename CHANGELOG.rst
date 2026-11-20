@@ -28,7 +28,7 @@ Maintenance
   (`#110 <https://github.com/clokep/celery-batches/pull/110>`_)
 
 0.11 (2026-01-16)
-===============
+=================
 
 Maintenance
 -----------
