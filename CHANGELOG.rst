@@ -3,13 +3,21 @@
 Changelog
 #########
 
+next
+====
+
+Maintenance
+-----------
+
+* Fix documentation generation. (`#113 <https://github.com/clokep/celery-batches/pull/113>`_)
+
 0.12 (2026-11-18)
 =================
 
 Improvements
 ------------
 
-* Add support for task signals (`#104 <https://github.com/clokep/celery-batches/pull/104>`_)
+* Add support for task signals. (`#104 <https://github.com/clokep/celery-batches/pull/104>`_)
 
 Bugfixes
 --------
@@ -28,7 +36,7 @@ Maintenance
   (`#110 <https://github.com/clokep/celery-batches/pull/110>`_)
 
 0.11 (2026-01-16)
-===============
+=================
 
 Maintenance
 -----------
