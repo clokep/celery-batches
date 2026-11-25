@@ -6,6 +6,12 @@ Changelog
 next
 ====
 
+Bugfixes
+--------
+
+* Fix a crash on worker startup when task events are disabled, caused by debug
+  ``print`` calls left in ``Batches.Strategy`` in 0.12.
+
 Maintenance
 -----------
 

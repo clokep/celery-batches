@@ -55,6 +55,16 @@ def test_strategy_rearms_flush_timer_after_reconnect() -> None:
     assert callable(handler)
 
 
+def test_strategy_with_events_disabled() -> None:
+    task = _make_batch_task()
+    consumer = _mock_consumer()
+    consumer.event_dispatcher = None
+
+    handler = task.Strategy(task, task.app, consumer)
+
+    assert callable(handler)
+
+
 def test_strategy_without_existing_timer_is_a_noop_reset() -> None:
     """First consumer start (no prior timer) must not raise."""
     task = _make_batch_task()
