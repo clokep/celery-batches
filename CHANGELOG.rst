@@ -10,7 +10,8 @@ Bugfixes
 --------
 
 * Fix a crash on worker startup when task events are disabled, caused by debug
-  ``print`` calls left in ``Batches.Strategy`` in 0.12.
+  ``print`` calls left in ``Batches.Strategy``. Contributed by
+  `Garret Meier <https://github.com/ghmeier>`_. (`#114 <https://github.com/clokep/celery-batches/pull/114>`_)
 
 Maintenance
 -----------
